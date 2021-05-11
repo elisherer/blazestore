@@ -42,6 +42,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
     updateDocumentToggle = useToggle(),
     codeView = useToggle(),
     notify = useNotification();
+
   const handleDeleteItem = async () => {
     setPrompt({
       title: "Delete document",
@@ -77,6 +78,46 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
     });
     menu.handleClose();
   };
+
+  const handleDeleteFieldsItem = async () => {
+    setPrompt({
+      title: "Delete data",
+      message: (
+        <div>
+          <Alert severity="error">
+            This will delete all fields of the document, excluding subcollections.
+          </Alert>
+          <Typography variant="caption">Document location</Typography>
+          <Typography>{path}</Typography>
+        </div>
+      ),
+      dangerous: true,
+      name: "Delete",
+      action: async () => {
+        try {
+          const res = await fetch(`/api/project/${params.project}/${path}`, {
+            method: "PATCH",
+            body: JSON.stringify(Object.keys(fields).reduce((a,c) => {
+              a[c] = "$delete";
+              return a;
+            }, {})),
+            headers: { "content-type": "application/json" }
+          });
+          const body = await res.json();
+          if (res.status === 200) {
+            notify.success(body.result);
+            push(`/project/${params.project}/data/${path}`, { update_message: body.result });
+          } else {
+            notify.error(body.error);
+          }
+        } catch (e) {
+          notify.error(e);
+        }
+      }
+    });
+    menu.handleClose();
+  };
+
   const lastPart = path?.split("/").pop();
 
   let addActionTitle, addActionHandler;
@@ -102,7 +143,6 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
       const body = await res.json();
       if (res.status === 200) {
         notify.success(body.result);
-        // full page refresh
         push(`/project/${params.project}/data/${path}`, { update_message: body.result });
       } else {
         notify.error(body.error);
@@ -190,8 +230,8 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
             </MenuItem>
           )}
           {type === "document" && (
-            <MenuItem disabled>
-              <ListItemText primary="Delete document fields (not implemented)" />
+            <MenuItem onClick={handleDeleteFieldsItem}>
+              <ListItemText primary="Delete document fields" />
             </MenuItem>
           )}
         </Menu>
