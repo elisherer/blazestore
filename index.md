@@ -28,7 +28,7 @@ e.g. `my-app.json` (in addition to `my-app-service-account-af2cb2364.json`)
 2. Open your project's settings.
 3. At the "Service accounts" tab, click the "Generate new private key" (Node.js chosen)
 
-![create_service_account](./docs/create_service_account.png)
+![create_service_account](./create_service_account.png)
 
 ### Update documents fields syntax
 
@@ -44,4 +44,4 @@ e.g. `my-app.json` (in addition to `my-app-service-account-af2cb2364.json`)
 |`["$remove", ...]`|any[]|`FieldValue.arrayRemove(...)`|Remove the following items from the existing array|`"flags": ["$remove", 2]`
 |`"$delete"`|None|`FieldValue.delete()`|Mark this field for deletion (on update only)| `"to_be_deleted": "$delete"`
 
-![syntax](./docs/update_doc.png)
+![syntax](./update_doc.png)
