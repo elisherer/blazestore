@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from "@material-ui/core";
 import DialogTitleWithActions from "../DialogTitleActions";
-import {usePrompt} from "./PromptProvider";
+import { usePrompt } from "./PromptProvider";
 
 const Prompt = () => {
   const [setPrompt, prompt] = usePrompt();

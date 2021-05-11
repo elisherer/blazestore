@@ -65,7 +65,6 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
           const body = await res.json();
           if (res.status === 200) {
             notify.success(body.result);
-            // full page refresh
             const parentPath = path.split("/").slice(0, -1).join("/");
             push(`/project/${params.project}/data/${parentPath}`);
           } else {
@@ -97,10 +96,12 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         try {
           const res = await fetch(`/api/project/${params.project}/${path}`, {
             method: "PATCH",
-            body: JSON.stringify(Object.keys(fields).reduce((a,c) => {
-              a[c] = "$delete";
-              return a;
-            }, {})),
+            body: JSON.stringify(
+              Object.keys(fields).reduce((a, c) => {
+                a[c] = "$delete";
+                return a;
+              }, {})
+            ),
             headers: { "content-type": "application/json" }
           });
           const body = await res.json();
@@ -117,21 +118,6 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
     });
     menu.handleClose();
   };
-
-  const lastPart = path?.split("/").pop();
-
-  let addActionTitle, addActionHandler;
-  switch (type) {
-    case "project":
-    case "document":
-      addActionTitle = "Start collection";
-      addActionHandler = startCollectionToggle.handleOpen;
-      break;
-    case "collection":
-      addActionTitle = "Add document";
-      addActionHandler = addDocumentToggle.handleOpen;
-      break;
-  }
 
   const handleAddDocumentAsync = async (path, fields) => {
     try {
@@ -178,6 +164,20 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
       el.scrollIntoView();
     }
   }, [selectedPath]);
+
+  const lastPart = path?.split("/").pop();
+  let addActionTitle, addActionHandler;
+  switch (type) {
+    case "project":
+    case "document":
+      addActionTitle = "Start collection";
+      addActionHandler = startCollectionToggle.handleOpen;
+      break;
+    case "collection":
+      addActionTitle = "Add document";
+      addActionHandler = addDocumentToggle.handleOpen;
+      break;
+  }
 
   return (
     <>

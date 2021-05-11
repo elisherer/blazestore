@@ -93,7 +93,7 @@ const EditDocumentForm = ({
             </ListSubheader>
             <ListItem>
               <ExplainListItemText
-                primary={`"$time:<seconds/ISO>"`}
+                primary={`"$time:<millis/ISO>"`}
                 secondary="Timestamp.fromDate(...)"
               />
             </ListItem>

@@ -119,7 +119,9 @@ const DataExplorer = () => {
             borderColor: "divider"
           }}
         >
-          {panel2 && <DataPanel key={panel2Path} path={panel2Path} selectedPath={panel3Path} {...panel2} />}
+          {panel2 && (
+            <DataPanel key={panel2Path} path={panel2Path} selectedPath={panel3Path} {...panel2} />
+          )}
         </Box>
         <Box sx={{ flex: 0.46, overflow: "auto", display: "flex", flexDirection: "column" }}>
           {panel3 && <DataPanel key={panel3Path} path={panel3Path} selectedPath="" {...panel3} />}

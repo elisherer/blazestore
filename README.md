@@ -32,4 +32,16 @@ e.g. `my-app.json` (in addition to `my-app-service-account-af2cb2364.json`)
 
 ### Update documents fields syntax
 
+|Value format|Argument|Translates to|Description|Example|
+|------------|---------|-------------|-----------|-------|
+|`"$id"`     |  None   | `path.split('/').pop()`|Gets the current document id (last part of the path)|`"key": "$id"`
+|`"$ref:/..."`| Path to a document | `firestore.doc("/...")`| `DocumentReference` type value| `"related_doc": $ref:/my-coll/doc-1"`
+|`"$time:<millis/ISO>"`|`millis` = Milliseconds since UNIX epoch OR `ISO` = ISO-8601 format. |`Timestamp.fromDate(new Date(...))`|`Timestamp` type value|`"action_time": $time:1609459200000"` / `$time:2021-01-01T00:00"`
+|`"$serverTime()"`|None|`FieldValue.serverTimestamp()`|`Timestamp` of write time on server|`"created_at": "$serverTime()"`
+|`["$geo", <la>, <lo>]`|Latitude and Longitude (float)|`new GeoPoint(<la>,<lo>)`|`GeoPoint` type value|`"ip_location": ["$geo", 34, 40]`
+|`"$inc:<by>"`|Number (float or int)|`FieldValue.increment(<by>)`|Increments (or decrements for negative values) the existing value (or adding to 0)|`"count": "$inc:1"`
+|`["$union", ...]`|any[]|`FieldValue.arrayUnion(...)`|Add the following items to the existing array (create one if not an array)| `"likes_by": ["$union", "$ref:/..."]`
+|`["$remove", ...]`|any[]|`FieldValue.arrayRemove(...)`|Remove the following items from the existing array|`"flags": ["$remove", 2]`
+|`"$delete"`|None|`FieldValue.delete()`|Mark this field for deletion (on update only)| `"to_be_deleted": "$delete"`
+
 ![syntax](./docs/update_doc.png)

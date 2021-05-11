@@ -50,7 +50,7 @@ const api = () => {
       res.send({
         result: {
           type: "project",
-          items: collections.map(c => ({id: c.id, path: c.path}))
+          items: collections.map(c => ({ id: c.id, path: c.path }))
         }
       });
     } catch (err) {
@@ -100,9 +100,7 @@ const api = () => {
       const path = urlParts.join("/");
       const isDocument = urlParts.length % 2 === 0;
       if (isDocument) {
-        const writeResult = await firestore
-          .doc(path)
-          .create(mapper(firestore, req.body));
+        const writeResult = await firestore.doc(path).create(mapper(path, firestore, req.body));
         res.send({
           result: `Document ${path} successfully created (At ${writeResult.writeTime.toDate()})`
         });
@@ -126,9 +124,7 @@ const api = () => {
       const path = urlParts.join("/");
       const isDocument = urlParts.length % 2 === 0;
       if (isDocument) {
-        const writeResult = await firestore
-          .doc(path)
-          .delete();
+        const writeResult = await firestore.doc(path).delete();
         res.send({
           result: `Document ${path} successfully deleted. (At ${writeResult.writeTime.toDate()})`
         });
@@ -152,9 +148,7 @@ const api = () => {
       const path = urlParts.join("/");
       const isDocument = urlParts.length % 2 === 0;
       if (isDocument) {
-        const writeResult = await firestore
-          .doc(path)
-          .update(mapper(firestore, req.body));
+        const writeResult = await firestore.doc(path).update(mapper(path, firestore, req.body));
         res.send({
           result: `Document ${path} successfully updated. (At ${writeResult.writeTime.toDate()})`
         });

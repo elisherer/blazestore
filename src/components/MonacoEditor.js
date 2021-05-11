@@ -1,34 +1,6 @@
 import { useCallback, useEffect, useRef, useMemo } from "react";
 import Editor from "@monaco-editor/react";
-import registerFirestoreValues from "./monaco.language.firestoreValues";
-
-let _monaco;
-
-const getModel = (value, uri) => {
-  if (!_monaco) {
-    console.warn("Called getModel before it is available!");
-    return;
-  }
-  const existingModel = _monaco.editor.getModels().find(m => m.uri.toString() === uri);
-  if (existingModel) {
-    existingModel.applyEdits([
-      {
-        range: existingModel.getFullModelRange(),
-        text: value
-      }
-    ]);
-  }
-
-  return existingModel || _monaco.editor.createModel(value, "json", _monaco.Uri.parse(uri));
-};
-
-const initMonaco = monaco => {
-  if (window._monacoInitialized) return;
-  window._monacoInitialized = true;
-
-  _monaco = monaco;
-  registerFirestoreValues(monaco);
-};
+import { getModel } from "./monaco.init";
 
 const LoaderStyles = {
   display: "flex",
@@ -99,8 +71,7 @@ const MonacoEditor = ({
   );
 
   const didMount = useCallback(
-    (editor, monaco) => {
-      initMonaco(monaco);
+    (editor /*, monaco*/) => {
       editorRef.current = editor;
       const currentValue = editor.getValue();
       if (model) {

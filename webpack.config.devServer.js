@@ -1,5 +1,5 @@
 const config = require("./server/config");
-const api = require('./server/api')
+const api = require("./server/api");
 
 const port = config.getNumber("SERVER_PORT", 8090);
 
@@ -12,6 +12,6 @@ module.exports = {
     historyApiFallback: true,
     before: app => {
       app.use("/api", api.dev(), api(config));
-    },
+    }
   }
 };

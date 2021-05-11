@@ -129,9 +129,12 @@ const AddCollectionDialog = ({
             variant="contained"
             disableElevation
             onClick={() =>
-              onSaveAsync(`${parentPath ? parentPath + "/" : "" /* project */}${form.collectionId}/${form.documentId}`, fields).then(
-                onClose
-              )
+              onSaveAsync(
+                `${parentPath ? parentPath + "/" : "" /* project */}${form.collectionId}/${
+                  form.documentId
+                }`,
+                fields
+              ).then(onClose)
             }
             disabled={
               !form.collectionId ||
