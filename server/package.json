@@ -1,0 +1,12 @@
+{
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@google-cloud/firestore": "4.11.0",
+    "connect-history-api-fallback": "1.6.0",
+    "cookie-parser": "^1.4.5",
+    "dotenv": "^8.2.0",
+    "express": "4.17.1",
+    "firebase-admin": "9.7.0",
+    "node-fetch": "2.6.1"
+  }
+}

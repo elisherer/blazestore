@@ -1,0 +1,9 @@
+.DS_Store
+.idea
+dist
+reports
+coverage
+node_modules
+temp
+**/*.tgz
+**/*.tar
