@@ -4,7 +4,7 @@ const mapper = require("./mapper");
 // init firebase
 const { getApplication, getAllApplications } = require("../applications");
 const admin = require("firebase-admin");
-getAllApplications().forEach((projectId, i) => {
+getAllApplications().forEach(projectId => {
   const app = getApplication(projectId);
   admin.initializeApp(
     {
@@ -18,7 +18,7 @@ getAllApplications().forEach((projectId, i) => {
 const api = () => {
   const router = new express.Router();
 
-  router.get("/health", async (req, res, next) => {
+  router.get("/health", async (req, res) => {
     try {
       res.send({
         result: "ok"
@@ -30,7 +30,7 @@ const api = () => {
     }
   });
 
-  router.get("/project", async (req, res, next) => {
+  router.get("/project", async (req, res) => {
     try {
       res.send({
         result: admin.apps.map(app => app.name)
@@ -42,7 +42,7 @@ const api = () => {
     }
   });
 
-  router.get("/project/:project", async (req, res, next) => {
+  router.get("/project/:project", async (req, res) => {
     try {
       const firestore = admin.app(req.params.project).firestore();
 
@@ -60,7 +60,7 @@ const api = () => {
     }
   });
 
-  router.get("/project/:project/*", async (req, res, next) => {
+  router.get("/project/:project/*", async (req, res) => {
     try {
       const firestore = admin.app(req.params.project).firestore();
 
@@ -92,7 +92,7 @@ const api = () => {
     }
   });
 
-  router.put("/project/:project/*", async (req, res, next) => {
+  router.put("/project/:project/*", async (req, res) => {
     try {
       const firestore = admin.app(req.params.project).firestore();
 
@@ -118,7 +118,7 @@ const api = () => {
     }
   });
 
-  router.delete("/project/:project/*", async (req, res, next) => {
+  router.delete("/project/:project/*", async (req, res) => {
     try {
       const firestore = admin.app(req.params.project).firestore();
 
@@ -144,7 +144,7 @@ const api = () => {
     }
   });
 
-  router.patch("/project/:project/*", async (req, res, next) => {
+  router.patch("/project/:project/*", async (req, res) => {
     try {
       const firestore = admin.app(req.params.project).firestore();
 

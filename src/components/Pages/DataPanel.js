@@ -242,7 +242,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
       </Box>
       {type === "document" && (
         <List dense disablePadding>
-          <ListItem button selected onClick={addActionHandler}>
+          <ListItem button selected onClick={addActionHandler} disabled>
             <ListItemIcon>
               <AddIcon fontSize="small" color="primary" />
             </ListItemIcon>

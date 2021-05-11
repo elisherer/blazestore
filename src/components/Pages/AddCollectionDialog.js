@@ -105,7 +105,7 @@ const AddCollectionDialog = ({
           <EditDocumentForm
             form={form}
             setForm={setForm}
-            parentPath={parentPath + "/" + form.collectionId}
+            parentPath={parentPath ? parentPath + "/" + form.collectionId : form.collectionId}
             jsonInvalid={invalidFieldsValue && fields}
             documentIdInvalid={invalidDocumentId}
           />
@@ -129,7 +129,7 @@ const AddCollectionDialog = ({
             variant="contained"
             disableElevation
             onClick={() =>
-              onSaveAsync(`${parentPath}/${form.collectionId}/${form.documentId}`, fields).then(
+              onSaveAsync(`${parentPath ? parentPath + "/" : "" /* project */}${form.collectionId}/${form.documentId}`, fields).then(
                 onClose
               )
             }

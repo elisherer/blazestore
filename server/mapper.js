@@ -15,7 +15,8 @@ const mapper = (firestore, obj) => {
     return obj.map(o => mapper(firestore, o));
   }
   if (typeof obj === "string" || obj instanceof String) {
-    if (obj.startsWith("$ref:")) return firestore.doc(obj.substring(5));
+    if (obj === "$delete") return FieldValue.delete();
+    else if (obj.startsWith("$ref:")) return firestore.doc(obj.substring(5));
     else if (obj === "$serverTime()") return FieldValue.serverTimestamp();
     else if (obj.startsWith("$inc:")) return FieldValue.increment(parseInt(obj.substring(5)));
     else if (obj.startsWith("$time:")) {
