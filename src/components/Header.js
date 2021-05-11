@@ -1,38 +1,62 @@
-import { AppBar, Grid, NativeSelect, Switch, Toolbar, Typography } from "@material-ui/core";
-import { DarkMode, LightMode } from "@material-ui/icons";
+import { AppBar, Chip, Grid, Menu, MenuItem, Switch, Toolbar, Typography } from "@material-ui/core";
+import { ArrowDropDown, DarkMode, LightMode } from "@material-ui/icons";
+import MaterialUIProvider from "../MaterialUIProvider";
 import { useColorMode } from "../ColorModeProvider";
 import FirestoreIcon from "./FirestoreIcon";
 import { useProjects } from "./ProjectsProvider";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
+import useMenu from "./hooks/useMenu";
 
 const Header = () => {
   const [colorMode, setColorMode] = useColorMode();
   const projects = useProjects();
-  const params = useParams();
+  const location = useLocation();
   const { push } = useHistory();
+  const projectDropDownMenu = useMenu();
+
+  const project = location.pathname.split("/")[2]; // /project/{project}
+
   return (
-    <AppBar position="static" color="inherit">
-      <Grid container justifyContent="space-between" alignItems="center">
-        <Toolbar>
-          <FirestoreIcon size={32} />
-          <Typography variant="h4" sx={{ ml: 2 }}>
-            Blazestore
-          </Typography>
-        </Toolbar>
-        <Toolbar>
-          <NativeSelect value={params.project} onChange={e => push(`/project/${e.target.value}`)}>
-            {projects.map(proj => (
-              <option key={proj}>{proj}</option>
-            ))}
-          </NativeSelect>
-        </Toolbar>
-        <Toolbar>
-          <LightMode />
-          <Switch color="primary" checked={colorMode === "dark"} onChange={setColorMode} />
-          <DarkMode />
-        </Toolbar>
-      </Grid>
-    </AppBar>
+    <MaterialUIProvider type="dark" nested>
+      <AppBar position="static" color="appbar" sx={{ color: "white" }}>
+        <Grid container justifyContent="space-between" alignItems="center">
+          <Toolbar>
+            <FirestoreIcon size={32} />
+            <Typography variant="h4" sx={{ ml: 2 }}>
+              Blazestore
+            </Typography>
+          </Toolbar>
+          <Toolbar>
+            <Chip
+              label={project}
+              onClick={projectDropDownMenu.handleOpen}
+              onDelete={projectDropDownMenu.handleOpen}
+              deleteIcon={<ArrowDropDown />}
+              variant="outlined"
+            />
+            <Menu {...projectDropDownMenu.Props}>
+              {projects.map(proj => (
+                <MenuItem
+                  key={proj}
+                  onClick={() => {
+                    push(`/project/${proj}/data`);
+                    projectDropDownMenu.handleClose();
+                  }}
+                  selected={proj === project}
+                >
+                  {proj}
+                </MenuItem>
+              ))}
+            </Menu>
+          </Toolbar>
+          <Toolbar>
+            <LightMode />
+            <Switch color="primary" checked={colorMode === "dark"} onChange={setColorMode} />
+            <DarkMode />
+          </Toolbar>
+        </Grid>
+      </AppBar>
+    </MaterialUIProvider>
   );
 };
 

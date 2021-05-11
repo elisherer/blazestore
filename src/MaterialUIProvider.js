@@ -18,7 +18,15 @@ const overrides = {
   }
 };
 
-const MaterialUIProvider = ({ children, type }: { children: any, type?: string }) => {
+const MaterialUIProvider = ({
+  children,
+  type,
+  nested
+}: {
+  children: any,
+  type?: string,
+  nested?: boolean
+}) => {
   let [colorMode] = useColorMode();
 
   if (type) {
@@ -30,15 +38,16 @@ const MaterialUIProvider = ({ children, type }: { children: any, type?: string }
       palette: {
         mode: colorMode,
         primary: { main: colors.blue.A400 },
-        secondary: { main: colors.red[700] }
+        secondary: { main: colors.red[700] },
+        appbar: { main: "#051e34" }
       }
     });
   }, [colorMode]);
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <GlobalStyles styles={overrides} />
+      {!nested && <CssBaseline />}
+      {!nested && <GlobalStyles styles={overrides} />}
       {children}
     </ThemeProvider>
   );

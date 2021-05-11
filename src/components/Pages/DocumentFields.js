@@ -4,6 +4,7 @@ import { Box, Typography } from "@material-ui/core";
 import { useMemo } from "react";
 import MonacoEditor from "../MonacoEditor";
 import UpdateDocumentDialog from "./UpdateDocumentDialog";
+import { Link, useHistory, useParams } from "react-router-dom";
 
 const tsToDate = (seconds, nanos) => {
   return seconds * 1000 + Math.round(nanos / 1e6);
@@ -13,55 +14,83 @@ const tsToDate = (seconds, nanos) => {
  *
  * @param desc
  * @param desc.valueType {string}
+ * @param ctx
+ * @param ctx.push {Function}
  * @returns {string}
  */
-const printValue = desc => {
+const printValue = (desc, ctx) => {
+  const val = desc[desc.valueType];
   switch (desc.valueType) {
     case "stringValue":
-      return `"${desc[desc.valueType]}"`;
+      return `"${val}"`;
     case "timestampValue":
-      return `${new Date(
-        tsToDate(Number(desc[desc.valueType].seconds), desc[desc.valueType].nanos)
-      ).toGMTString()}`;
+      return `${new Date(tsToDate(Number(val.seconds), val.nanos)).toGMTString()}`;
     case "booleanValue":
     case "integerValue":
-    case "referenceValue":
-      return `${desc[desc.valueType]}`;
+    case "doubleValue":
+      return `${val}`;
+    case "referenceValue": {
+      const ref = val.substr(val.indexOf("/documents/") + 10);
+      return (
+        <span>
+          <span>(reference)&nbsp;</span>
+          <Link title="Follow reference" to={`/project/${ctx.params.project}/data${ref}`}>
+            {ref}
+          </Link>
+        </span>
+      );
+    }
     case "geoPointValue":
-      return `[${desc[desc.valueType].latitude}° N, ${desc[desc.valueType].longitude}° E]`;
+      return (
+        <a
+          title="See on Google Maps"
+          href={`https://maps.google.com/maps?q=${val.latitude},${val.longitude}&z=17&t=k`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          [{val.latitude}° N, {val.longitude}° E]
+        </a>
+      );
     case "nullValue":
       return "null";
     case "arrayValue":
-      return desc[desc.valueType].values?.length === 0 ? "[]" : "";
+      return val.values?.length === 0 ? "[]" : "";
     case "mapValue":
-      if (Object.keys(desc[desc.valueType].fields).length === 0) return "{}";
+      if (Object.keys(val.fields).length === 0) return "{}";
       return "";
   }
   return "N/A";
 };
 
+const MAX_SAFE_INTEGER_STRING = Number.MAX_SAFE_INTEGER.toString(),
+  MAX_SAFE_INTEGER_LENGTH = MAX_SAFE_INTEGER_STRING.length;
+const biggerThanInt32 = numString => {
+  if (!/^\d+$/.test(numString)) return false; // not at integer
+  if (numString.length > MAX_SAFE_INTEGER_LENGTH) return true;
+  if (numString.length === MAX_SAFE_INTEGER_LENGTH && MAX_SAFE_INTEGER_STRING < numString)
+    return true;
+  return false;
+};
+
 const applyValue = (parent, node, desc, child) => {
+  const val = desc[desc.valueType];
   switch (desc.valueType) {
     case "stringValue":
-      return (parent[node] = desc[desc.valueType]);
+      return (parent[node] = val);
     case "timestampValue":
       return (parent[node] = `$time:${new Date(
-        tsToDate(Number(desc[desc.valueType].seconds), desc[desc.valueType].nanos)
+        tsToDate(Number(val.seconds), val.nanos)
       ).toISOString()}`);
     case "booleanValue":
-      return (parent[node] = Boolean(desc[desc.valueType]));
+      return (parent[node] = Boolean(val));
     case "integerValue":
-      return (parent[node] = Number(desc[desc.valueType]));
+    case "doubleValue":
+      return (parent[node] =
+        typeof val === "number" ? val : biggerThanInt32(val) ? BigInt(val) : Number(val));
     case "referenceValue":
-      return (parent[node] = `$ref:${desc[desc.valueType].substr(
-        desc[desc.valueType].indexOf("/documents/") + 10
-      )}`);
+      return (parent[node] = `$ref:${val.substr(val.indexOf("/documents/") + 10)}`);
     case "geoPointValue":
-      return (parent[node] = [
-        "$geo",
-        desc[desc.valueType].latitude,
-        desc[desc.valueType].longitude
-      ]);
+      return (parent[node] = ["$geo", val.latitude, val.longitude]);
     case "nullValue":
       return (parent[node] = null);
     case "arrayValue":
@@ -71,7 +100,7 @@ const applyValue = (parent, node, desc, child) => {
   }
 };
 
-const renderTree = (path, nodes) => {
+const renderTree = (ctx, path, nodes) => {
   let result = { json: {} };
   result.nodes = !nodes
     ? null
@@ -82,9 +111,9 @@ const renderTree = (path, nodes) => {
           let child;
           if (composite) {
             child = nodes[node].mapValue
-              ? renderTree(path + "/" + node, nodes[node].mapValue.fields)
+              ? renderTree(ctx, path + "/" + node, nodes[node].mapValue.fields)
               : nodes[node].arrayValue
-              ? renderTree(path + "/" + node, nodes[node].arrayValue.values)
+              ? renderTree(ctx, path + "/" + node, nodes[node].arrayValue.values)
               : null;
           }
           applyValue(result.json, node, nodes[node], child?.json);
@@ -95,11 +124,13 @@ const renderTree = (path, nodes) => {
               label={
                 <Box sx={{ display: "flex" }}>
                   <Typography
-                    sx={{ opacity: 0.5, fontSize: "0.9rem", fontFamily: "monospace", mr: 2 }}
+                    sx={{ opacity: 0.5, fontSize: "0.9rem", fontFamily: "monospace", mr: 1 }}
                   >
                     {node + (composite ? "" : ":")}
                   </Typography>
-                  <Typography sx={{ fontSize: "0.9rem" }}>{printValue(nodes[node])}</Typography>
+                  <Typography sx={{ fontSize: "0.9rem" }}>
+                    {printValue(nodes[node], ctx)}
+                  </Typography>
                 </Box>
               }
             >
@@ -111,7 +142,9 @@ const renderTree = (path, nodes) => {
 };
 
 const DocumentFields = ({ path, fields, view, updateDocumentToggle, onUpdateDocumentAsync }) => {
-  const tree = useMemo(() => renderTree("", fields), [fields]);
+  const params = useParams();
+  const ctx = { params };
+  const tree = useMemo(() => renderTree(ctx, "", fields), [fields]);
 
   return (
     <>

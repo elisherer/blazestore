@@ -31,6 +31,7 @@ import AddDocumentDialog from "./AddDocumentDialog";
 import { useNotification } from "../NotificationProvider/NotificationProvider";
 import { useEffect } from "react";
 import { usePrompt } from "../PromptProvider/PromptProvider";
+import AddFieldDialog from "./AddFieldDialog";
 
 const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
   const menu = useMenu(),
@@ -39,6 +40,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
   const { push } = useHistory();
   const startCollectionToggle = useToggle(),
     addDocumentToggle = useToggle(),
+    addFieldToggle = useToggle(),
     updateDocumentToggle = useToggle(),
     codeView = useToggle(),
     notify = useNotification();
@@ -195,6 +197,13 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         onClose={addDocumentToggle.handleClose}
         onSaveAsync={handleAddDocumentAsync}
       />
+      <AddFieldDialog
+        key={"fld:" + path + addFieldToggle.open}
+        parentPath={path}
+        open={addFieldToggle.open}
+        onClose={addFieldToggle.handleClose}
+        onSaveAsync={handleUpdateDocumentAsync}
+      />
       <List dense disablePadding>
         <ListItem button divider onClick={() => push(`/project/${params.project}/data/${path}`)}>
           <ListItemIcon>
@@ -282,7 +291,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
       </Box>
       {type === "document" && (
         <List dense disablePadding>
-          <ListItem button selected onClick={addActionHandler} disabled>
+          <ListItem button selected onClick={addFieldToggle.handleOpen}>
             <ListItemIcon>
               <AddIcon fontSize="small" color="primary" />
             </ListItemIcon>

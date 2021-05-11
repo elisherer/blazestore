@@ -17,6 +17,7 @@ const FirestoreBreadcrumbs = () => {
       separator={<NavigateNextIcon fontSize="small" />}
       maxItems={5}
       itemsAfterCollapse={4}
+      sx={{ "& li": { lineHeight: "1em" } }}
     >
       <Link
         component={RouterLink}

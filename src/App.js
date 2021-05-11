@@ -10,6 +10,8 @@ import { PromptProvider } from "./components/PromptProvider/PromptProvider";
 import { NotificationProvider } from "./components/NotificationProvider/NotificationProvider";
 import { ProjectsProvider } from "./components/ProjectsProvider";
 import { useEffect, useState } from "react";
+import { LocalizationProvider } from "@material-ui/lab";
+import AdapterDateFns from "@material-ui/lab/AdapterDateFns";
 
 const MainContainer = styled("div")(({ theme }) => ({
   position: "relative",
@@ -34,44 +36,46 @@ const App = () => {
 
   return (
     <ColorModeProvider>
-      <MaterialUIProvider>
-        <PromptProvider>
-          <NotificationProvider>
-            <ProjectsProvider projects={projects}>
-              {loading ? (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    width: "100vw",
-                    height: "100vh"
-                  }}
-                >
-                  <CircularProgress size={96} />
-                </Box>
-              ) : (
-                <Grid container direction="column" wrap="nowrap">
-                  <Header />
-                  <MainContainer>
-                    <Switch>
-                      <Route exact path="/">
-                        <Redirect to={`/project/${projects[0]}/data`} />
-                      </Route>
-                      <Route path="/project/:project">
-                        <ProjectIndex />
-                      </Route>
-                      <Route path="*">
-                        <NotFound />
-                      </Route>
-                    </Switch>
-                  </MainContainer>
-                </Grid>
-              )}
-            </ProjectsProvider>
-          </NotificationProvider>
-        </PromptProvider>
-      </MaterialUIProvider>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <MaterialUIProvider>
+          <PromptProvider>
+            <NotificationProvider>
+              <ProjectsProvider projects={projects}>
+                {loading ? (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      width: "100vw",
+                      height: "100vh"
+                    }}
+                  >
+                    <CircularProgress size={96} />
+                  </Box>
+                ) : (
+                  <Grid container direction="column" wrap="nowrap">
+                    <Header />
+                    <MainContainer>
+                      <Switch>
+                        <Route exact path="/">
+                          <Redirect to={`/project/${projects[0]}/data`} />
+                        </Route>
+                        <Route path="/project/:project">
+                          <ProjectIndex />
+                        </Route>
+                        <Route path="*">
+                          <NotFound />
+                        </Route>
+                      </Switch>
+                    </MainContainer>
+                  </Grid>
+                )}
+              </ProjectsProvider>
+            </NotificationProvider>
+          </PromptProvider>
+        </MaterialUIProvider>
+      </LocalizationProvider>
     </ColorModeProvider>
   );
 };

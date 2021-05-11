@@ -5,6 +5,7 @@ import FirestoreBreadcrumbs from "./FirestoreBreadcrumbs";
 import { useEffect, useState } from "react";
 import Lookup from "./Lookup";
 import { Edit as EditIcon } from "@material-ui/icons";
+import DataPanelLoader from "./DataPanelLoader";
 
 const DataExplorer = () => {
   const params = useParams();
@@ -45,9 +46,12 @@ const DataExplorer = () => {
   useEffect(() => {
     if (typeof panel1Path === "string") {
       setPanel1(null);
-      fetch(`/api/project/${params.project}/${panel1Path}`)
+      const controller = new AbortController();
+      const { signal } = controller;
+      fetch(`/api/project/${params.project}/${panel1Path}`, { signal })
         .then(x => x.json())
         .then(res => setPanel1(res.result));
+      return () => controller.abort();
     }
   }, [panel1Path, params.project, update_message]);
 
@@ -55,9 +59,12 @@ const DataExplorer = () => {
   useEffect(() => {
     setPanel2(null);
     if (panel2Path) {
-      fetch(`/api/project/${params.project}/${panel2Path}`)
+      const controller = new AbortController();
+      const { signal } = controller;
+      fetch(`/api/project/${params.project}/${panel2Path}`, { signal })
         .then(x => x.json())
         .then(res => setPanel2(res.result));
+      return () => controller.abort();
     }
   }, [panel2Path, params.project, update_message]);
 
@@ -65,9 +72,12 @@ const DataExplorer = () => {
   useEffect(() => {
     setPanel3(null);
     if (panel3Path) {
-      fetch(`/api/project/${params.project}/${panel3Path}`)
+      const controller = new AbortController();
+      const { signal } = controller;
+      fetch(`/api/project/${params.project}/${panel3Path}`, { signal })
         .then(x => x.json())
         .then(res => setPanel3(res.result));
+      return () => controller.abort();
     }
   }, [panel3Path, params.project, update_message]);
 
@@ -97,7 +107,15 @@ const DataExplorer = () => {
         )}
       </Box>
       <Box sx={{ flex: 1, display: "flex", overflow: "auto" }}>
-        <Box sx={{ flex: 0.27, overflow: "auto", display: "flex", flexDirection: "column" }}>
+        <Box
+          sx={{
+            flex: 0.27,
+            overflow: "auto",
+            display: "flex",
+            flexDirection: "column",
+            position: "relative"
+          }}
+        >
           {panel1 && (
             <DataPanel
               key={panel1Path}
@@ -107,6 +125,7 @@ const DataExplorer = () => {
               {...panel1}
             />
           )}
+          {panel1Path && !panel1 && <DataPanelLoader />}
         </Box>
         <Box
           sx={{
@@ -116,15 +135,28 @@ const DataExplorer = () => {
             flexDirection: "column",
             borderRight: 1,
             borderLeft: 1,
-            borderColor: "divider"
+            borderColor: "divider",
+            position: "relative"
           }}
         >
           {panel2 && (
             <DataPanel key={panel2Path} path={panel2Path} selectedPath={panel3Path} {...panel2} />
           )}
+          {panel2Path && ((panel1Path && !panel1) || !panel2) && <DataPanelLoader />}
         </Box>
-        <Box sx={{ flex: 0.46, overflow: "auto", display: "flex", flexDirection: "column" }}>
+        <Box
+          sx={{
+            flex: 0.46,
+            overflow: "auto",
+            display: "flex",
+            flexDirection: "column",
+            position: "relative"
+          }}
+        >
           {panel3 && <DataPanel key={panel3Path} path={panel3Path} selectedPath="" {...panel3} />}
+          {panel3Path && ((panel1Path && !panel1) || (panel2Path && !panel2) || !panel3) && (
+            <DataPanelLoader />
+          )}
         </Box>
       </Box>
     </Box>
