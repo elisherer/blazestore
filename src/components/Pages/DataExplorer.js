@@ -50,7 +50,10 @@ const DataExplorer = () => {
       const { signal } = controller;
       fetch(`/api/project/${params.project}/${panel1Path}`, { signal })
         .then(x => x.json())
-        .then(res => setPanel1(res.result));
+        .then(res => setPanel1(res.result))
+        .catch(e => {
+          if (e.name !== "AbortError") throw e;
+        });
       return () => controller.abort();
     }
   }, [panel1Path, params.project, update_message]);
@@ -63,7 +66,10 @@ const DataExplorer = () => {
       const { signal } = controller;
       fetch(`/api/project/${params.project}/${panel2Path}`, { signal })
         .then(x => x.json())
-        .then(res => setPanel2(res.result));
+        .then(res => setPanel2(res.result))
+        .catch(e => {
+          if (e.name !== "AbortError") throw e;
+        });
       return () => controller.abort();
     }
   }, [panel2Path, params.project, update_message]);
@@ -76,7 +82,10 @@ const DataExplorer = () => {
       const { signal } = controller;
       fetch(`/api/project/${params.project}/${panel3Path}`, { signal })
         .then(x => x.json())
-        .then(res => setPanel3(res.result));
+        .then(res => setPanel3(res.result))
+        .catch(e => {
+          if (e.name !== "AbortError") throw e;
+        });
       return () => controller.abort();
     }
   }, [panel3Path, params.project, update_message]);
