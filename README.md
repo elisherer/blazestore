@@ -5,18 +5,24 @@ GUI for Firestore Admin SDK (inspired by the official firestore console)
 ### Usage
 
 - Clone this repository
-- Throw your service account JSON files into `/applications`
+- Throw your service account JSON file into `/server/credentials`
   - IMPORTANT: Your files will be ignored by Git (there is a `.gitignore` file in there)
   - See instructions below how to obtain a service account
-- Create another file for each of the service account files (same folder).
+- Create another `.env` file (same folder).
 
-e.g. `my-app.json` (in addition to `my-app-service-account-af2cb2364.json`)
-```json
-{
-  "type": "firestore",
-  "project_id": "my-app",
-  "database_url": "https://my-app.firebaseio.com"
-}
+e.g. `.env` (in addition to `my-app-service-account-af2cb2364.json`)
+```sh
+# default is 3030
+#SERVER_PORT=
+
+FIRESTORE_DATABASE_URL="https://my-project.firebaseio.com"
+
+GCLOUD_AUTH_TYPE="service_account"
+GCLOUD_PROJECT="my-project"
+
+#GCLOUD_AUTH_TYPE=oauth2
+# override the default redirect url (default is the first one)
+#OAUTH2_REDIRECT_URL=
 ```
 - Install dependencies `npm install`
 - Run the app by `npm start`

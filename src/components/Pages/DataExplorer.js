@@ -48,7 +48,7 @@ const DataExplorer = () => {
       setPanel1(null);
       const controller = new AbortController();
       const { signal } = controller;
-      fetch(`/api/project/${params.project}/${panel1Path}`, { signal })
+      fetch(`/api/project/${params.project}/data/${panel1Path}`, { signal })
         .then(x => x.json())
         .then(res => setPanel1(res.result))
         .catch(e => {
@@ -64,7 +64,7 @@ const DataExplorer = () => {
     if (panel2Path) {
       const controller = new AbortController();
       const { signal } = controller;
-      fetch(`/api/project/${params.project}/${panel2Path}`, { signal })
+      fetch(`/api/project/${params.project}/data/${panel2Path}`, { signal })
         .then(x => x.json())
         .then(res => setPanel2(res.result))
         .catch(e => {
@@ -80,7 +80,7 @@ const DataExplorer = () => {
     if (panel3Path) {
       const controller = new AbortController();
       const { signal } = controller;
-      fetch(`/api/project/${params.project}/${panel3Path}`, { signal })
+      fetch(`/api/project/${params.project}/data/${panel3Path}`, { signal })
         .then(x => x.json())
         .then(res => setPanel3(res.result))
         .catch(e => {

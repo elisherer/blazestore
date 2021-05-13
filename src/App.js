@@ -8,7 +8,7 @@ import NotFound from "./NotFound";
 
 import { PromptProvider } from "./components/PromptProvider/PromptProvider";
 import { NotificationProvider } from "./components/NotificationProvider/NotificationProvider";
-import { ProjectsProvider } from "./components/ProjectsProvider";
+import { UserProvider } from "./components/UserProvider";
 import { useEffect, useState } from "react";
 import { LocalizationProvider } from "@material-ui/lab";
 import AdapterDateFns from "@material-ui/lab/AdapterDateFns";
@@ -24,12 +24,12 @@ const MainContainer = styled("div")(({ theme }) => ({
 
 const App = () => {
   const [loading, setLoading] = useState(true);
-  const [projects, setProjects] = useState([]);
+  const [userContext, setUserContext] = useState([]);
   useEffect(() => {
-    fetch("/api/project")
+    fetch("/api/init")
       .then(x => x.json())
       .then(data => {
-        setProjects(data.result);
+        setUserContext(data.result);
         setLoading(false);
       });
   }, []);
@@ -40,7 +40,7 @@ const App = () => {
         <MaterialUIProvider>
           <PromptProvider>
             <NotificationProvider>
-              <ProjectsProvider projects={projects}>
+              <UserProvider user={userContext}>
                 {loading ? (
                   <Box
                     sx={{
@@ -59,7 +59,7 @@ const App = () => {
                     <MainContainer>
                       <Switch>
                         <Route exact path="/">
-                          <Redirect to={`/project/${projects[0]}/data`} />
+                          <Redirect to={`/project/${userContext.projects[0]}/data`} />
                         </Route>
                         <Route path="/project/:project">
                           <ProjectIndex />
@@ -71,7 +71,7 @@ const App = () => {
                     </MainContainer>
                   </Grid>
                 )}
-              </ProjectsProvider>
+              </UserProvider>
             </NotificationProvider>
           </PromptProvider>
         </MaterialUIProvider>

@@ -1,4 +1,5 @@
 const config = require("./server/config");
+const registerOAuth2 = require("./server/oauth2");
 const api = require("./server/api");
 
 const port = config.getNumber("SERVER_PORT", 8090);
@@ -11,6 +12,9 @@ module.exports = {
     compress: true,
     historyApiFallback: true,
     before: app => {
+      if (config.auth.oauth2) {
+        registerOAuth2(app);
+      }
       app.use("/api", api.dev(), api(config));
     }
   }

@@ -61,7 +61,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
       name: "Start delete",
       action: async () => {
         try {
-          const res = await fetch(`/api/project/${params.project}/${path}`, {
+          const res = await fetch(`/api/project/${params.project}/data/${path}`, {
             method: "DELETE"
           });
           const body = await res.json();
@@ -96,7 +96,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
       name: "Delete",
       action: async () => {
         try {
-          const res = await fetch(`/api/project/${params.project}/${path}`, {
+          const res = await fetch(`/api/project/${params.project}/data/${path}`, {
             method: "PATCH",
             body: JSON.stringify(
               Object.keys(fields).reduce((a, c) => {
@@ -123,7 +123,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
 
   const handleAddDocumentAsync = async (path, fields) => {
     try {
-      const res = await fetch(`/api/project/${params.project}/${path}`, {
+      const res = await fetch(`/api/project/${params.project}/data/${path}`, {
         method: "PUT",
         body: JSON.stringify(fields),
         headers: { "content-type": "application/json" }
@@ -142,7 +142,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
 
   const handleUpdateDocumentAsync = async (path, fields) => {
     try {
-      const res = await fetch(`/api/project/${params.project}/${path}`, {
+      const res = await fetch(`/api/project/${params.project}/data/${path}`, {
         method: "PATCH",
         body: JSON.stringify(fields),
         headers: { "content-type": "application/json" }
@@ -268,6 +268,9 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
               button
               key={item.id}
               onClick={() => push(`/project/${params.project}/data/${item.path}`)}
+              sx={{
+                backgroundColor: selectedPath === item.path ? "action.selected" : undefined
+              }}
             >
               <ListItemText
                 inset

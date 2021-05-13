@@ -1,4 +1,6 @@
-const result = require("dotenv").config();
+const fs = require("fs");
+const path = require("path");
+const result = require("dotenv").config({ path: path.join(__dirname, "credentials", ".env") });
 if (result.error) {
   throw result.error;
 }
@@ -11,7 +13,8 @@ const get = (key, defaultValue) => {
   return process.env[key];
 };
 
-module.exports = {
+const config = {
+  auth: {}, // to be filled
   has,
   get,
   getNumber: (key, defaultValue) =>
@@ -41,3 +44,29 @@ module.exports = {
     return val === "true" || val === "1";
   }
 };
+
+// read credentials dir
+const files = fs.readdirSync(path.join(__dirname, "credentials"));
+files
+  .filter(a => a.endsWith(".json"))
+  .forEach(credFilename => {
+    const contents = fs.readFileSync(path.join(__dirname, "credentials", credFilename), "utf8");
+    try {
+      const cred = JSON.parse(contents);
+      if (process.env.GCLOUD_AUTH_TYPE === "oauth2") {
+        if (cred.web) {
+          config.auth.oauth2 = cred.web;
+          config.auth.project_id = cred.web.project_id;
+        }
+      } else if (process.env.GCLOUD_AUTH_TYPE === "service_account") {
+        if (cred.type === "service_account") {
+          config.auth.service_account = cred;
+          config.auth.project_id = cred.project_id;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  });
+
+module.exports = config;

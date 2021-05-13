@@ -3,13 +3,13 @@ import { ArrowDropDown, DarkMode, LightMode } from "@material-ui/icons";
 import MaterialUIProvider from "../MaterialUIProvider";
 import { useColorMode } from "../ColorModeProvider";
 import FirestoreIcon from "./FirestoreIcon";
-import { useProjects } from "./ProjectsProvider";
+import { useUserContext } from "./UserProvider";
 import { useHistory, useLocation } from "react-router-dom";
 import useMenu from "./hooks/useMenu";
 
 const Header = () => {
   const [colorMode, setColorMode] = useColorMode();
-  const projects = useProjects();
+  const userContext = useUserContext();
   const location = useLocation();
   const { push } = useHistory();
   const projectDropDownMenu = useMenu();
@@ -35,7 +35,7 @@ const Header = () => {
               variant="outlined"
             />
             <Menu {...projectDropDownMenu.Props}>
-              {projects.map(proj => (
+              {userContext.projects.map(proj => (
                 <MenuItem
                   key={proj}
                   onClick={() => {
