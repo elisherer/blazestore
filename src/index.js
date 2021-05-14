@@ -3,7 +3,7 @@ import App from "./App";
 import { BrowserRouter } from "react-router-dom";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import "./components/monaco.init";
+import "./monaco/monaco.init";
 
 ReactDOM.render(
   <BrowserRouter>

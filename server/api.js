@@ -112,7 +112,7 @@ const api = () => {
     try {
       const firestore = admin.app(req.params.project).firestore();
 
-      const urlParts = req.path.split("/").slice(3); // skip the first 3
+      const urlParts = req.path.split("/").slice(4); // skip the first 4
       const isDocument = urlParts.length % 2 === 0;
       let items, fields;
       if (isDocument) {
@@ -144,7 +144,7 @@ const api = () => {
     try {
       const firestore = getApp(req).firestore();
 
-      const urlParts = req.path.split("/").slice(3); // skip the first 3
+      const urlParts = req.path.split("/").slice(4); // skip the first 4
       const path = urlParts.join("/");
       const isDocument = urlParts.length % 2 === 0;
       if (isDocument) {
@@ -168,7 +168,7 @@ const api = () => {
     try {
       const firestore = getApp(req).firestore();
 
-      const urlParts = req.path.split("/").slice(3); // skip the first 3
+      const urlParts = req.path.split("/").slice(4); // skip the first 4
       const path = urlParts.join("/");
       const isDocument = urlParts.length % 2 === 0;
       if (isDocument) {
@@ -192,7 +192,7 @@ const api = () => {
     try {
       const firestore = getApp(req).firestore();
 
-      const urlParts = req.path.split("/").slice(3); // skip the first 3
+      const urlParts = req.path.split("/").slice(4); // skip the first 4
       const path = urlParts.join("/");
       const isDocument = urlParts.length % 2 === 0;
       if (isDocument) {

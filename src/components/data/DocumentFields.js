@@ -2,9 +2,9 @@ import { TreeItem, TreeView } from "@material-ui/lab";
 import { ArrowDropDown, ArrowRight } from "@material-ui/icons";
 import { Box, Typography } from "@material-ui/core";
 import { useMemo } from "react";
-import MonacoEditor from "../MonacoEditor";
+import MonacoEditor from "../../monaco/MonacoEditor";
 import UpdateDocumentDialog from "./UpdateDocumentDialog";
-import { Link, useHistory, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 const tsToDate = (seconds, nanos) => {
   return seconds * 1000 + Math.round(nanos / 1e6);
@@ -15,7 +15,7 @@ const tsToDate = (seconds, nanos) => {
  * @param desc
  * @param desc.valueType {string}
  * @param ctx
- * @param ctx.push {Function}
+ * @param ctx.project {string}
  * @returns {string}
  */
 const printValue = (desc, ctx) => {
@@ -34,7 +34,7 @@ const printValue = (desc, ctx) => {
       return (
         <span>
           <span>(reference)&nbsp;</span>
-          <Link title="Follow reference" to={`/project/${ctx.params.project}/data${ref}`}>
+          <Link title="Follow reference" to={`/project/${ctx.project}/data${ref}`}>
             {ref}
           </Link>
         </span>
@@ -124,7 +124,12 @@ const renderTree = (ctx, path, nodes) => {
               label={
                 <Box sx={{ display: "flex" }}>
                   <Typography
-                    sx={{ opacity: 0.5, fontSize: "0.9rem", fontFamily: "monospace", mr: 1 }}
+                    sx={{
+                      opacity: 0.5,
+                      fontSize: "0.9rem",
+                      fontFamily: '"Roboto Mono", monospace',
+                      mr: 1
+                    }}
                   >
                     {node + (composite ? "" : ":")}
                   </Typography>
@@ -143,8 +148,8 @@ const renderTree = (ctx, path, nodes) => {
 
 const DocumentFields = ({ path, fields, view, updateDocumentToggle, onUpdateDocumentAsync }) => {
   const params = useParams();
-  const ctx = { params };
-  const tree = useMemo(() => renderTree(ctx, "", fields), [fields]);
+  const ctx = useMemo(() => ({ project: params.project }), [params.project]);
+  const tree = useMemo(() => renderTree(ctx, "", fields), [fields, ctx]);
 
   return (
     <>

@@ -1,7 +1,7 @@
 import { Route, Switch } from "react-router-dom";
 import DataExplorer from "./DataExplorer";
 
-const ProjectIndex = () => {
+const DataIndex = () => {
   /*
   const [value, setValue] = useState(0);
   const params = useParams();
@@ -26,4 +26,4 @@ const ProjectIndex = () => {
   );
 };
 
-export default ProjectIndex;
+export default DataIndex;

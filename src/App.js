@@ -3,7 +3,7 @@ import { Box, CircularProgress, Grid, styled } from "@material-ui/core";
 import MaterialUIProvider from "./MaterialUIProvider";
 import ColorModeProvider from "./ColorModeProvider";
 import Header from "./components/Header";
-import ProjectIndex from "./components/Pages/ProjectIndex";
+import DataIndex from "./components/data/DataIndex";
 import NotFound from "./NotFound";
 
 import { PromptProvider } from "./components/PromptProvider/PromptProvider";
@@ -61,8 +61,11 @@ const App = () => {
                         <Route exact path="/">
                           <Redirect to={`/project/${userContext.projects[0]}/data`} />
                         </Route>
-                        <Route path="/project/:project">
-                          <ProjectIndex />
+                        <Route exact path="/project/:project">
+                          <Redirect to={`${location.pathname}/data`} />
+                        </Route>
+                        <Route path="/project/:project/data">
+                          <DataIndex />
                         </Route>
                         <Route path="*">
                           <NotFound />

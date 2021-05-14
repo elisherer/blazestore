@@ -18,6 +18,7 @@ import {
   Add as AddIcon,
   Code as CodeIcon,
   CollectionsBookmark as CollectionsBookmarkIcon,
+  ContentCopy as ContentCopyIcon,
   Description as DescriptionIcon,
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
@@ -32,6 +33,7 @@ import { useNotification } from "../NotificationProvider/NotificationProvider";
 import { useEffect } from "react";
 import { usePrompt } from "../PromptProvider/PromptProvider";
 import AddFieldDialog from "./AddFieldDialog";
+import copyToClipboard from "../../helpers/copyToClipboard";
 
 const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
   const menu = useMenu(),
@@ -181,6 +183,15 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
       break;
   }
 
+  const handleCopyName = () => {
+    menu.handleClose();
+    if (copyToClipboard(type === "project" ? project : lastPart)) {
+      notify.success("Name was copied to clipboard");
+    } else {
+      notify.warn("Name was not copied to clipboard");
+    }
+  };
+
   return (
     <>
       <AddCollectionDialog
@@ -220,10 +231,17 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
             sx={{ whiteSpace: "nowrap", overflow: "hidden" }}
           />
           {type !== "project" && (
-            <ListItemSecondaryAction>
-              <IconButton size="small" onClick={menu.handleOpen}>
-                <MoreVertIcon />
-              </IconButton>
+            <ListItemSecondaryAction sx={{ right: 0 }}>
+              <Tooltip title="Copy name">
+                <IconButton size="small" onClick={handleCopyName}>
+                  <ContentCopyIcon fontSize="sm" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Actions">
+                <IconButton size="small" onClick={menu.handleOpen}>
+                  <MoreVertIcon fontSize="sm" />
+                </IconButton>
+              </Tooltip>
             </ListItemSecondaryAction>
           )}
         </ListItem>
@@ -278,13 +296,14 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
                 primaryTypographyProps={{
                   sx: {
                     opacity: selectedPath === item.path ? 1 : item.missing ? 0.4 : 0.5,
+                    fontFamily: '"Roboto Mono", monospace',
                     fontStyle: item.missing ? "italic" : undefined
                   }
                 }}
                 data-path={item.path}
               />
               {selectedPath === item.path && (
-                <ListItemSecondaryAction>
+                <ListItemSecondaryAction sx={{ right: 0 }}>
                   <NavigateNextIcon />
                 </ListItemSecondaryAction>
               )}
@@ -302,7 +321,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
               primaryTypographyProps={{ color: "primary", variant: "subtitle2" }}
               primary="Add field"
             />
-            <ListItemSecondaryAction>
+            <ListItemSecondaryAction sx={{ right: 0 }}>
               <Tooltip title="Toggle code/fields view">
                 <IconButton size="small" onClick={codeView.handleToggle}>
                   <CodeIcon />

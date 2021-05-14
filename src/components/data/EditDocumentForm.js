@@ -13,7 +13,7 @@ import {
 } from "@material-ui/core";
 import uuid from "../../helpers/uuid";
 import { Casino as CasinoIcon } from "@material-ui/icons";
-import MonacoEditor from "../MonacoEditor";
+import MonacoEditor from "../../monaco/MonacoEditor";
 
 const ExplainListItemText = styled(ListItemText)(() => ({
   color: "#ad5c38",

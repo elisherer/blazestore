@@ -1,18 +1,30 @@
 import { useLocation, useParams } from "react-router-dom";
-import { Box, IconButton } from "@material-ui/core";
+import { Box, IconButton, Toolbar } from "@material-ui/core";
 import DataPanel from "./DataPanel";
 import FirestoreBreadcrumbs from "./FirestoreBreadcrumbs";
 import { useEffect, useState } from "react";
+import copyToClipboard from "../../helpers/copyToClipboard";
 import Lookup from "./Lookup";
-import { Edit as EditIcon } from "@material-ui/icons";
+import { Edit as EditIcon, ContentCopy as ContentCopyIcon } from "@material-ui/icons";
 import DataPanelLoader from "./DataPanelLoader";
+import { useNotification } from "../NotificationProvider/NotificationProvider";
 
 const DataExplorer = () => {
   const params = useParams();
   const location = useLocation();
+  const notify = useNotification();
   const update_message = location.state?.update_message;
   const [lookupValue, setLookupValue] = useState();
-  const openLookup = () => setLookupValue("/" + location.pathname.split("/").slice(4).join("/"));
+
+  const currentPath = "/" + location.pathname.split("/").slice(4).join("/");
+  const copyPath = () => {
+    if (copyToClipboard(currentPath)) {
+      notify.success("Current path copied to clipboard");
+    } else {
+      notify.warn("Current path was not copied to clipboard");
+    }
+  };
+  const openLookup = () => setLookupValue(currentPath);
 
   const [panel1, setPanel1] = useState(null);
   const [panel2, setPanel2] = useState(null);
@@ -108,9 +120,14 @@ const DataExplorer = () => {
         ) : (
           <>
             <FirestoreBreadcrumbs />
-            <IconButton className="edit" size="small" onClick={openLookup}>
-              <EditIcon fontSize="small" />
-            </IconButton>
+            <Box sx={{ ml: 1 }}>
+              <IconButton size="small" onClick={copyPath}>
+                <ContentCopyIcon fontSize="small" />
+              </IconButton>
+              <IconButton className="edit" size="small" onClick={openLookup}>
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Box>
             <Box onClick={openLookup} sx={{ flex: 1 }} />
           </>
         )}
