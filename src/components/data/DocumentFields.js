@@ -101,7 +101,7 @@ const applyValue = (parent, node, desc, child) => {
 };
 
 const renderTree = (ctx, path, nodes) => {
-  let result = { json: {} };
+  let result = { json: {}, ids: [] };
   result.nodes = !nodes
     ? null
     : Object.keys(nodes)
@@ -110,11 +110,15 @@ const renderTree = (ctx, path, nodes) => {
           const composite = nodes[node].mapValue || nodes[node].arrayValue;
           let child;
           if (composite) {
+            result.ids.push(path + node);
             child = nodes[node].mapValue
               ? renderTree(ctx, path + "/" + node, nodes[node].mapValue.fields)
               : nodes[node].arrayValue
               ? renderTree(ctx, path + "/" + node, nodes[node].arrayValue.values)
               : null;
+            if (child.ids.length) {
+              result.ids.push(...child.ids);
+            }
           }
           applyValue(result.json, node, nodes[node], child?.json);
           return (
@@ -122,7 +126,7 @@ const renderTree = (ctx, path, nodes) => {
               key={node}
               nodeId={path + node}
               label={
-                <Box sx={{ display: "flex" }}>
+                <Box sx={{ display: "flex", py: 1 }}>
                   <Typography
                     sx={{
                       opacity: 0.5,
@@ -165,7 +169,7 @@ const DocumentFields = ({ path, fields, view, updateDocumentToggle, onUpdateDocu
         <TreeView
           aria-label="rich object"
           defaultCollapseIcon={<ArrowDropDown />}
-          defaultExpanded={["root"]}
+          defaultExpanded={tree.ids}
           defaultExpandIcon={<ArrowRight />}
         >
           {tree.nodes}

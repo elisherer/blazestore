@@ -165,7 +165,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
   useEffect(() => {
     const el = document.querySelector(`[data-path="${selectedPath}"]`);
     if (el) {
-      el.scrollIntoView();
+      el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
     }
   }, [selectedPath]);
 
@@ -280,7 +280,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
           flex: "1 30%"
         }}
       >
-        <List dense disablePadding>
+        <List dense disablePadding sx={{ overflow: "hidden" }}>
           {items?.map(item => (
             <ListItem
               button
@@ -297,7 +297,11 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
                   sx: {
                     opacity: selectedPath === item.path ? 1 : item.missing ? 0.4 : 0.5,
                     fontFamily: '"Roboto Mono", monospace',
-                    fontStyle: item.missing ? "italic" : undefined
+                    fontStyle: item.missing ? "italic" : undefined,
+
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                    overflowY: "clip"
                   }
                 }}
                 data-path={item.path}
