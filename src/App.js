@@ -12,6 +12,7 @@ import { UserProvider } from "./components/UserProvider";
 import { useEffect, useState } from "react";
 import { LocalizationProvider } from "@material-ui/lab";
 import AdapterDateFns from "@material-ui/lab/AdapterDateFns";
+import IndexesIndex from "./components/indexes/IndexesIndex";
 
 const MainContainer = styled("div")(({ theme }) => ({
   position: "relative",
@@ -66,6 +67,9 @@ const App = () => {
                         </Route>
                         <Route path="/project/:project/data">
                           <DataIndex />
+                        </Route>
+                        <Route path="/project/:project/indexes">
+                          <IndexesIndex />
                         </Route>
                         <Route path="*">
                           <NotFound />
