@@ -1,5 +1,5 @@
 import { useLocation, useParams } from "react-router-dom";
-import { Box, IconButton, Toolbar } from "@material-ui/core";
+import { Box, IconButton } from "@material-ui/core";
 import DataPanel from "./DataPanel";
 import FirestoreBreadcrumbs from "./FirestoreBreadcrumbs";
 import { useEffect, useState } from "react";

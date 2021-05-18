@@ -46,7 +46,7 @@ module.exports = {
     }),
 
     new ESLintPlugin({
-      lintDirtyModulesOnly: !PRODUCTION,
+      threads: true,
       formatter: require("eslint-friendly-formatter"),
       failOnWarning: PRODUCTION,
       failOnError: PRODUCTION,
