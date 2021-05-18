@@ -98,7 +98,10 @@ const EditDocumentForm = ({
               />
             </ListItem>
             <ListItem>
-              <ExplainListItemText primary={`"$ref:/..." `} secondary={`firestore.doc("/...")`} />
+              <ExplainListItemText
+                primary={`"$ref:/..." (accepts $path0/1..) `}
+                secondary={`firestore.doc("/...")`}
+              />
             </ListItem>
             <ListItem>
               <ExplainListItemText
