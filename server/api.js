@@ -79,7 +79,10 @@ const api = () => {
             ? undefined
             : {
                 displayName: req.user.profile.displayName,
-                photo: req.user.profile.photos && req.user.profile.photos[0]?.value
+                photo:
+                  req.user.profile.photos &&
+                  req.user.profile.photos[0] &&
+                  req.user.profile.photos[0].value
               }
         }
       });
@@ -148,7 +151,7 @@ const api = () => {
       const path = urlParts.join("/");
       const isDocument = urlParts.length % 2 === 0;
       if (isDocument) {
-        const writeResult = await firestore.doc(path).create(mapper(path, firestore, req.body));
+        const writeResult = await firestore.doc(path).create(mapper(urlParts, firestore, req.body));
         res.send({
           result: `Document ${path} successfully created (At ${writeResult.writeTime.toDate()})`
         });
@@ -196,7 +199,7 @@ const api = () => {
       const path = urlParts.join("/");
       const isDocument = urlParts.length % 2 === 0;
       if (isDocument) {
-        const writeResult = await firestore.doc(path).update(mapper(path, firestore, req.body));
+        const writeResult = await firestore.doc(path).update(mapper(urlParts, firestore, req.body));
         res.send({
           result: `Document ${path} successfully updated. (At ${writeResult.writeTime.toDate()})`
         });

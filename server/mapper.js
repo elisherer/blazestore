@@ -1,7 +1,12 @@
 const admin = require("firebase-admin");
 const { FieldValue, GeoPoint, Timestamp } = admin.firestore;
 
-const mapper = (path, firestore, obj) => {
+const replacePath = (input, pathParts) =>
+  input.replace(/\$path(\d+)?/g, (match, p1) => {
+    return p1 ? pathParts[Number(p1)] : pathParts.join("/");
+  });
+
+const mapper = (pathParts, firestore, obj) => {
   if (Array.isArray(obj)) {
     if (obj[0] === "$union") {
       const [, ...args] = obj;
@@ -12,12 +17,15 @@ const mapper = (path, firestore, obj) => {
     } else if (obj[0] === "$geo") {
       return new GeoPoint(Number(obj[1]), Number(obj[2]));
     }
-    return obj.map(o => mapper(path, firestore, o));
+    return obj.map(o => mapper(pathParts, firestore, o));
   }
   if (typeof obj === "string" || obj instanceof String) {
-    if (obj === "$id") return path.split("/").pop();
+    if (obj === "$id") return pathParts[pathParts.length - 1];
+    // last part
     else if (obj === "$delete") return FieldValue.delete();
-    else if (obj.startsWith("$ref:")) return firestore.doc(obj.substring(5));
+    else if (obj.startsWith("$path")) return replacePath(obj, pathParts);
+    else if (obj.startsWith("$ref:"))
+      return firestore.doc(replacePath(obj.substring(5), pathParts));
     else if (obj === "$serverTime()") return FieldValue.serverTimestamp();
     else if (obj.startsWith("$inc:")) return FieldValue.increment(Number(obj.substring(5)));
     else if (obj.startsWith("$time:")) {
@@ -31,7 +39,7 @@ const mapper = (path, firestore, obj) => {
     // might be null
     if (obj) {
       Object.keys(obj).forEach(k => {
-        obj[k] = mapper(path, firestore, obj[k]);
+        obj[k] = mapper(pathParts, firestore, obj[k]);
       });
     }
     return obj;

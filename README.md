@@ -41,7 +41,9 @@ GCLOUD_PROJECT="my-project"
 |Value format|Argument|Translates to|Description|Example|
 |------------|---------|-------------|-----------|-------|
 |`"$id"`     |  None   | `path.split('/').pop()`|Gets the current document id (last part of the path)|`"key": "$id"`
-|`"$ref:/..."`| Path to a document | `firestore.doc("/...")`| `DocumentReference` type value| `"related_doc": $ref:/my-coll/doc-1"`
+|`"$path"`   |  None   | `path`|Gets the current document path|`"current_path": "$path"`
+|`"$path<n>"`|  None   | `path.split('/')[n]`|Gets the Nth part of current document path|`"root_collection": "$path0"`
+|`"$ref:/..."`| Path to a document (can contain `$path<n>?` placeholders) | `firestore.doc("/...")`| `DocumentReference` type value| `"related_doc": $ref:/$path0/$path1/sibling-coll/doc-1"`
 |`"$time:<millis/ISO>"`|`millis` = Milliseconds since UNIX epoch OR `ISO` = ISO-8601 format. |`Timestamp.fromDate(new Date(...))`|`Timestamp` type value|`"action_time": $time:1609459200000"` / `$time:2021-01-01T00:00"`
 |`"$serverTime()"`|None|`FieldValue.serverTimestamp()`|`Timestamp` of write time on server|`"created_at": "$serverTime()"`
 |`["$geo", <la>, <lo>]`|Latitude and Longitude (float)|`new GeoPoint(<la>,<lo>)`|`GeoPoint` type value|`"ip_location": ["$geo", 34, 40]`
