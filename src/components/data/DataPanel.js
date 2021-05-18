@@ -13,7 +13,7 @@ import {
   Tooltip,
   Typography
 } from "@material-ui/core";
-import FirestoreIcon from "../FirestoreIcon";
+import BlazestoreIcon from "../BlazestoreIcon";
 import {
   Add as AddIcon,
   Code as CodeIcon,
@@ -219,7 +219,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         <ListItem button divider onClick={() => push(`/project/${params.project}/data/${path}`)}>
           <ListItemIcon>
             {type === "project" ? (
-              <FirestoreIcon />
+              <BlazestoreIcon />
             ) : type === "document" ? (
               <DescriptionIcon fontSize="small" />
             ) : (

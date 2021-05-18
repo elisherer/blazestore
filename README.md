@@ -1,4 +1,8 @@
 ## Blazestore
+[![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/elisherer/blazestore/blob/master/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/elisherer/blazestore/pulls)
+<img src="./docs/blazestore.svg" alt="Blazestore logo" align="right" width="20%"/>
+
 
 GUI for Firestore Admin SDK (inspired by the official firestore console)
 

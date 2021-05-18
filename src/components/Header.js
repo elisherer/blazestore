@@ -13,7 +13,7 @@ import {
 import { ArrowDropDown, DarkMode, LightMode } from "@material-ui/icons";
 import MaterialUIProvider from "../MaterialUIProvider";
 import { useColorMode } from "../ColorModeProvider";
-import FirestoreIcon from "./FirestoreIcon";
+import BlazestoreIcon from "./BlazestoreIcon";
 import { useUserContext } from "./UserProvider";
 import { NavLink, useHistory, useLocation } from "react-router-dom";
 import useMenu from "./hooks/useMenu";
@@ -32,8 +32,8 @@ const Header = () => {
       <AppBar position="static" color="appbar" sx={{ color: "white" }}>
         <Grid container justifyContent="space-between" alignItems="center">
           <Toolbar>
-            <FirestoreIcon size={32} />
-            <Typography variant="h4" sx={{ ml: 2 }}>
+            <BlazestoreIcon size={32} />
+            <Typography variant="h4" sx={{ ml: 1 }}>
               Blazestore
             </Typography>
           </Toolbar>
