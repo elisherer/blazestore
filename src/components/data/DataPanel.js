@@ -13,7 +13,6 @@ import {
   Tooltip,
   Typography
 } from "@material-ui/core";
-import BlazestoreIcon from "../BlazestoreIcon";
 import {
   Add as AddIcon,
   Code as CodeIcon,
@@ -34,6 +33,7 @@ import { useEffect } from "react";
 import { usePrompt } from "../PromptProvider/PromptProvider";
 import AddFieldDialog from "./AddFieldDialog";
 import copyToClipboard from "../../helpers/copyToClipboard";
+import FirestoreIcon from "../FirestoreIcon";
 
 const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
   const menu = useMenu(),
@@ -219,7 +219,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         <ListItem button divider onClick={() => push(`/project/${params.project}/data/${path}`)}>
           <ListItemIcon>
             {type === "project" ? (
-              <BlazestoreIcon />
+              <FirestoreIcon />
             ) : type === "document" ? (
               <DescriptionIcon fontSize="small" />
             ) : (
