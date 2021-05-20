@@ -15,18 +15,18 @@
 
 export default monaco => {
   const highlights = [
-    ["id", "#ff9b65"],
-    ["ref:", "#b0ffff"],
-    ["time:", "#b0ffb0"],
-    ["serverTime()", "#b0ffb0"],
-    ["inc:", "#ffffb0"],
-    ["geo", "#5597d2"],
-    ["union", "#ffb0ff"],
-    ["remove", "#ffb0ff"],
-    ["delete", "#d46363"]
+    ["id", 0],
+    ["ref:", 1],
+    ["time:", 2],
+    ["serverTime()", 2],
+    ["inc:", 3],
+    ["geo", 4],
+    ["union", 5],
+    ["remove", 5],
+    ["delete", 6]
   ];
-  const highlighter = highlights.reduce((a, c, i) => {
-    a["$" + c[0]] = i;
+  const highlighter = highlights.reduce((a, c) => {
+    a["$" + c[0]] = c[1];
     return a;
   }, {});
   const tokenPattern = new RegExp(
@@ -34,21 +34,10 @@ export default monaco => {
     "g"
   );
 
-  const tokenNamer = hl => "value" + hl[0].toLowerCase().replace(/[:()]/g, "");
-
-  monaco.editor.defineTheme("vs-dark-blazestore", {
-    base: "vs-dark",
-    inherit: true,
-    rules: highlights.map(hl => ({
-      token: tokenNamer(hl),
-      foreground: hl[1].substr(1)
-    }))
-  });
-
   // add variable highlighting inside the JSON language
   // i.e ${variable}
   const legend = {
-    tokenTypes: highlights.map(tokenNamer),
+    tokenTypes: ["blaze0", "blaze1", "blaze2", "blaze3", "blaze4", "blaze5", "blaze6"],
     tokenModifiers: ["declaration"]
   };
 

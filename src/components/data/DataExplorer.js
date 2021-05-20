@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import copyToClipboard from "../../helpers/copyToClipboard";
 import Lookup from "./Lookup";
 import { Edit as EditIcon, ContentCopy as ContentCopyIcon } from "@material-ui/icons";
-import DataPanelLoader from "./DataPanelLoader";
+import OverlayLoader from "../OverlayLoader";
 import { useNotification } from "../NotificationProvider/NotificationProvider";
 
 const DataExplorer = () => {
@@ -151,7 +151,7 @@ const DataExplorer = () => {
               {...panel1}
             />
           )}
-          {panel1Path && !panel1 && <DataPanelLoader />}
+          {panel1Path && !panel1 && <OverlayLoader />}
         </Box>
         <Box
           sx={{
@@ -168,7 +168,7 @@ const DataExplorer = () => {
           {panel2 && (
             <DataPanel key={panel2Path} path={panel2Path} selectedPath={panel3Path} {...panel2} />
           )}
-          {panel2Path && ((panel1Path && !panel1) || !panel2) && <DataPanelLoader />}
+          {panel2Path && ((panel1Path && !panel1) || !panel2) && <OverlayLoader />}
         </Box>
         <Box
           sx={{
@@ -181,7 +181,7 @@ const DataExplorer = () => {
         >
           {panel3 && <DataPanel key={panel3Path} path={panel3Path} selectedPath="" {...panel3} />}
           {panel3Path && ((panel1Path && !panel1) || (panel2Path && !panel2) || !panel3) && (
-            <DataPanelLoader />
+            <OverlayLoader />
           )}
         </Box>
       </Box>

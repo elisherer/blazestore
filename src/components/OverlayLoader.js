@@ -1,6 +1,6 @@
 import { Box, CircularProgress } from "@material-ui/core";
 
-const DataPanelLoader = () => {
+const OverlayLoader = () => {
   return (
     <Box
       sx={{
@@ -22,4 +22,4 @@ const DataPanelLoader = () => {
   );
 };
 
-export default DataPanelLoader;
+export default OverlayLoader;

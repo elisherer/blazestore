@@ -46,8 +46,17 @@ const Header = () => {
               variant="outlined"
               sx={{ mr: 2 }}
             />
-            <Tabs value={location.pathname.startsWith(`/project/${project}/data`) ? 0 : 1}>
+            <Tabs
+              value={
+                location.pathname.startsWith(`/project/${project}/data`)
+                  ? 0
+                  : location.pathname.startsWith(`/project/${project}/rules`)
+                  ? 1
+                  : 2
+              }
+            >
               <Tab component={NavLink} to={`/project/${project}/data`} label="DATA" />
+              <Tab component={NavLink} to={`/project/${project}/rules`} label="RULES" />
               <Tab component={NavLink} to={`/project/${project}/indexes`} label="INDEXES" />
             </Tabs>
             <Menu {...projectDropDownMenu.Props}>

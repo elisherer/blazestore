@@ -254,6 +254,46 @@ const api = () => {
     }
   });
 
+  router.get("/project/:project/rules/list", async (req, res) => {
+    try {
+      const securityRules = getApp(req).securityRules();
+
+      const rulesetMetadataList = await securityRules.listRulesetMetadata();
+
+      res.send({
+        result: {
+          type: "rulesetMetadataList",
+          rulesetMetadataList
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500);
+      res.send({ error: err.message });
+    }
+  });
+
+  router.get("/project/:project/rules", async (req, res) => {
+    try {
+      const securityRules = getApp(req).securityRules();
+
+      const ruleset = await securityRules.getFirestoreRuleset();
+
+      securityRules.listRulesetMetadata();
+
+      res.send({
+        result: {
+          type: "ruleset",
+          ruleset
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500);
+      res.send({ error: err.message });
+    }
+  });
+
   return router;
 };
 

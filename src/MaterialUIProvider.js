@@ -12,9 +12,6 @@ const overrides = {
   "#root": {
     height: "100vh",
     display: "flex"
-  },
-  ".monaco-editor .margin-view-overlays .current-line, .monaco-editor .view-overlays .current-line": {
-    backgroundColor: "#383838"
   }
 };
 

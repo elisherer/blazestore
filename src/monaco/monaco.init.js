@@ -1,5 +1,6 @@
 import { loader } from "@monaco-editor/react";
-import registerFirestoreValues from "./monaco.language.firestoreValues";
+import registerFirestoreValues from "./monaco.semantics.firestoreValues";
+import registerFirebaseRuleset from "./monaco.language.firebaseRuleset";
 
 loader.config({
   paths: {
@@ -42,5 +43,34 @@ loader.init().then(monaco => {
   // also, we keep it on 'window' to prevent it from happening when HMR hits
   window[globalInitializationKey] = true;
 
+  const blazeColors = [
+    ["#ff9b63", "#a54024"],
+    ["#b0ffff", "#3dacac"],
+    ["#b0ffb0", "#21903a"],
+    ["#ffffb0", "#b4b446"],
+    ["#559bd4", "#0e4da5"],
+    ["#ffb0ff", "#a84ca8"],
+    ["#d46363", "#a01c1c"]
+  ];
+
+  monaco.editor.defineTheme("vs-dark-blazestore", {
+    base: "vs-dark",
+    inherit: true,
+    rules: blazeColors.map((color, i) => ({
+      token: `blaze${i}`,
+      foreground: color[0].substr(1)
+    }))
+  });
+
+  monaco.editor.defineTheme("vs-light-blazestore", {
+    base: "vs",
+    inherit: true,
+    rules: blazeColors.map((color, i) => ({
+      token: `blaze${i}`,
+      foreground: color[1].substr(1)
+    }))
+  });
+
   registerFirestoreValues(monaco);
+  registerFirebaseRuleset(monaco);
 });

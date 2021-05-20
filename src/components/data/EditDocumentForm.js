@@ -79,6 +79,7 @@ const EditDocumentForm = ({
         <Grid item xs={9}>
           <MonacoEditor
             language="json"
+            theme="vs-dark-blazestore"
             variant="modal"
             value={form.fieldsString}
             onChange={fieldsString => setForm({ ...form, fieldsString })}

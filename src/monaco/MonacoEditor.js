@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useMemo } from "react";
 import Editor from "@monaco-editor/react";
 import { getModel } from "./monaco.init";
+import { useColorMode } from "../ColorModeProvider";
 
 const LoaderStyles = {
   display: "flex",
@@ -16,6 +17,7 @@ const LoaderStyles = {
 const MonacoOptions = {};
 /** @type IEditorConstructionOptions */
 MonacoOptions.embedded = {
+  renderLineHighlight: "none",
   quickSuggestions: true,
   showFoldingControls: "always",
   scrollBeyondLastLine: false,
@@ -30,6 +32,7 @@ MonacoOptions.embedded = {
 };
 /** @type IEditorConstructionOptions */
 MonacoOptions.modal = {
+  renderLineHighlight: "none",
   quickSuggestions: true,
   showFoldingControls: "always",
   scrollBeyondLastLine: false,
@@ -61,6 +64,7 @@ const MonacoEditor = ({
   onDidChangeCursorPosition?: Function
 }) => {
   const editorRef = useRef();
+  const [colorMode] = useColorMode();
   const handleChange = useCallback(
     value => {
       const outValue = value.replace(/\r\n/g, "\n");
@@ -116,7 +120,7 @@ const MonacoEditor = ({
 
   return (
     <Editor
-      theme="vs-dark-blazestore"
+      theme={`vs-${colorMode}-blazestore`}
       tabSize={2}
       options={options}
       onMount={didMount}

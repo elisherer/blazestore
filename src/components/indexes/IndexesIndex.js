@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Tab, Tabs, Typography } from "@material-ui/core";
+import { Grid, Tab, Tabs, Typography } from "@material-ui/core";
 import { useParams } from "react-router-dom";
 import GroupingTable from "./GroupingTable";
 
@@ -40,6 +40,7 @@ const indexesColumns = [
   {
     id: "fields",
     label: "Fields indexed",
+    maxWidth: 800,
     format: fields =>
       fields.map(f => (
         <span key={f.fieldPath}>
@@ -95,21 +96,25 @@ const IndexesIndex = () => {
   }, [params.project, view]);
 
   return (
-    <div>
-      <Tabs
-        value={view === "composite" ? 0 : 1}
-        onChange={(e, v) => setView(v === 1 ? "fields" : "composite")}
-      >
-        <Tab label="Composite" />
-        <Tab label="Single field" />
-      </Tabs>
-      {view === "composite" && indexes?.slice && (
-        <GroupingTable rows={indexes} columns={indexesColumns} />
-      )}
-      {view === "fields" && fields?.slice && (
-        <GroupingTable rows={fields} columns={fieldsColumns} />
-      )}
-    </div>
+    <Grid container direction="column" sx={{ margin: "24px auto", width: "90%" }}>
+      <Grid item>
+        <Tabs
+          value={view === "composite" ? 0 : 1}
+          onChange={(e, v) => setView(v === 1 ? "fields" : "composite")}
+        >
+          <Tab label="Composite" />
+          <Tab label="Single field" />
+        </Tabs>
+      </Grid>
+      <Grid item xs sx={{ overflow: "auto" }}>
+        {view === "composite" && indexes?.slice && (
+          <GroupingTable rows={indexes} columns={indexesColumns} />
+        )}
+        {view === "fields" && fields?.slice && (
+          <GroupingTable rows={fields} columns={fieldsColumns} />
+        )}
+      </Grid>
+    </Grid>
   );
 };
 
