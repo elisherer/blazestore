@@ -1,11 +1,11 @@
 import { useLocation, useParams } from "react-router-dom";
-import { Box, IconButton } from "@material-ui/core";
+import { Box, IconButton, Tooltip } from "@material-ui/core";
 import DataPanel from "./DataPanel";
 import FirestoreBreadcrumbs from "./FirestoreBreadcrumbs";
 import { useEffect, useState } from "react";
 import copyToClipboard from "../../helpers/copyToClipboard";
 import Lookup from "./Lookup";
-import { Edit as EditIcon, ContentCopy as ContentCopyIcon } from "@material-ui/icons";
+import { ContentCopy as ContentCopyIcon } from "@material-ui/icons";
 import OverlayLoader from "../OverlayLoader";
 import { useNotification } from "../NotificationProvider/NotificationProvider";
 
@@ -119,16 +119,13 @@ const DataExplorer = () => {
           <Lookup lookupValue={lookupValue} setLookupValue={setLookupValue} />
         ) : (
           <>
-            <FirestoreBreadcrumbs />
-            <Box sx={{ ml: 1 }}>
+            <FirestoreBreadcrumbs onEdit={openLookup} />
+            <Box onClick={openLookup} sx={{ flex: 1 }} />
+            <Tooltip title="Copy path">
               <IconButton size="small" onClick={copyPath}>
                 <ContentCopyIcon fontSize="small" />
               </IconButton>
-              <IconButton className="edit" size="small" onClick={openLookup}>
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </Box>
-            <Box onClick={openLookup} sx={{ flex: 1 }} />
+            </Tooltip>
           </>
         )}
       </Box>

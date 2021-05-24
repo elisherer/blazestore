@@ -150,10 +150,21 @@ const renderTree = (ctx, path, nodes) => {
   return result;
 };
 
-const DocumentFields = ({ path, fields, view, updateDocumentToggle, onUpdateDocumentAsync }) => {
+const DocumentFields = ({
+  path,
+  fields,
+  fieldsJsonRef,
+  view,
+  updateDocumentToggle,
+  onUpdateDocumentAsync
+}) => {
   const params = useParams();
   const ctx = useMemo(() => ({ project: params.project }), [params.project]);
-  const tree = useMemo(() => renderTree(ctx, "", fields), [fields, ctx]);
+  const tree = useMemo(() => {
+    const t = renderTree(ctx, "", fields);
+    fieldsJsonRef.current = t.json;
+    return t;
+  }, [fields, ctx]);
 
   return (
     <>

@@ -19,6 +19,7 @@ const Lookup = ({ lookupValue, setLookupValue }) => {
         fullWidth
         onChange={e => setLookupValue(e.target.value)}
         onBlur={() => setLookupValue("")}
+        onFocus={e => e.target.setSelectionRange(0, e.target.value.length)}
       />
     </form>
   );

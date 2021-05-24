@@ -29,11 +29,13 @@ import { useHistory, useParams } from "react-router-dom";
 import DocumentFields from "./DocumentFields";
 import AddDocumentDialog from "./AddDocumentDialog";
 import { useNotification } from "../NotificationProvider/NotificationProvider";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePrompt } from "../PromptProvider/PromptProvider";
 import AddFieldDialog from "./AddFieldDialog";
 import copyToClipboard from "../../helpers/copyToClipboard";
 import FirestoreIcon from "../FirestoreIcon";
+import RenameMoveCopyDocumentDialog from "./RenameMoveCopyDocumentDialog";
+import ApiClient from "./apiClient";
 
 const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
   const menu = useMenu(),
@@ -44,8 +46,10 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
     addDocumentToggle = useToggle(),
     addFieldToggle = useToggle(),
     updateDocumentToggle = useToggle(),
+    renameMoveCopyDocumentToggle = useToggle(),
     codeView = useToggle(),
-    notify = useNotification();
+    notify = useNotification(),
+    docRef = useRef();
 
   const handleDeleteItem = async () => {
     setPrompt({
@@ -62,20 +66,13 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
       dangerous: true,
       name: "Start delete",
       action: async () => {
-        try {
-          const res = await fetch(`/api/project/${params.project}/data/${path}`, {
-            method: "DELETE"
-          });
-          const body = await res.json();
-          if (res.status === 200) {
-            notify.success(body.result);
-            const parentPath = path.split("/").slice(0, -1).join("/");
-            push(`/project/${params.project}/data/${parentPath}`);
-          } else {
-            notify.error(body.error);
-          }
-        } catch (e) {
-          notify.error(e);
+        const result = await ApiClient.deletePathAsync(params.project, path);
+        if (result.success) {
+          const parentPath = path.split("/").slice(0, -1).join("/");
+          push(`/project/${params.project}/data/${parentPath}`);
+          notify.success(result.message);
+        } else {
+          notify.error(result.error);
         }
       }
     });
@@ -97,69 +94,49 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
       dangerous: true,
       name: "Delete",
       action: async () => {
-        try {
-          const res = await fetch(`/api/project/${params.project}/data/${path}`, {
-            method: "PATCH",
-            body: JSON.stringify(
-              Object.keys(fields).reduce((a, c) => {
-                a[c] = "$delete";
-                return a;
-              }, {})
-            ),
-            headers: { "content-type": "application/json" }
-          });
-          const body = await res.json();
-          if (res.status === 200) {
-            notify.success(body.result);
-            push(`/project/${params.project}/data/${path}`, { update_message: body.result });
-          } else {
-            notify.error(body.error);
-          }
-        } catch (e) {
-          notify.error(e);
+        const result = await ApiClient.updateDocumentFieldsAsync(
+          params.project,
+          path,
+          Object.keys(fields).reduce((a, c) => {
+            a[c] = "$delete";
+            return a;
+          }, {})
+        );
+        if (result.success) {
+          const parentPath = path.split("/").slice(0, -1).join("/");
+          push(`/project/${params.project}/data/${parentPath}`);
+          notify.success(result.message);
+        } else {
+          notify.error(result.error);
         }
       }
     });
     menu.handleClose();
   };
 
-  const handleAddDocumentAsync = async (path, fields) => {
-    try {
-      const res = await fetch(`/api/project/${params.project}/data/${path}`, {
-        method: "PUT",
-        body: JSON.stringify(fields),
-        headers: { "content-type": "application/json" }
-      });
-      const body = await res.json();
-      if (res.status === 200) {
-        notify.success(body.result);
-        push(`/project/${params.project}/data/${path}`, { update_message: body.result });
-      } else {
-        notify.error(body.error);
-      }
-    } catch (e) {
-      notify.error(e);
+  const handleCreatePathAsync = async (path, fields) => {
+    const result = await ApiClient.createPathAsync(params.project, path, fields);
+    if (result.success) {
+      push(`/project/${params.project}/data/${path}`, { update_message: result.message });
+      notify.success(result.message);
+    } else {
+      notify.error(result.error);
+      return false;
     }
+    return true;
   };
 
   const handleUpdateDocumentAsync = async (path, fields) => {
-    try {
-      const res = await fetch(`/api/project/${params.project}/data/${path}`, {
-        method: "PATCH",
-        body: JSON.stringify(fields),
-        headers: { "content-type": "application/json" }
-      });
-      const body = await res.json();
-      if (res.status === 200) {
-        notify.success(body.result);
-        // full page refresh
-        push(`/project/${params.project}/data/${path}`, { update_message: body.result });
-      } else {
-        notify.error(body.error);
-      }
-    } catch (e) {
-      notify.error(e);
+    const result = await ApiClient.updateDocumentFieldsAsync(params.project, path, fields);
+    if (result.success) {
+      const parentPath = path.split("/").slice(0, -1).join("/");
+      push(`/project/${params.project}/data/${parentPath}`, { update_message: result.message });
+      notify.success(result.message);
+    } else {
+      notify.error(result.error);
+      return false;
     }
+    return true;
   };
 
   useEffect(() => {
@@ -192,6 +169,46 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
     }
   };
 
+  const handleOpenCopyMoveDocument = () => {
+    renameMoveCopyDocumentToggle.handleOpen();
+    menu.handleClose();
+  };
+  const handleRenameMoveCopyDocumentAsync = async (from, to) => {
+    let result = await ApiClient.createPathAsync(params.project, to.path, docRef.current);
+    if (!result.success) {
+      notify.error(result.error);
+      return false; // don't close window
+    }
+    if (!to.move) {
+      push(`/project/${params.project}/data/${to.path}`, { update_message: result.message });
+      notify.success(result.message);
+    } else {
+      result = await ApiClient.deletePathAsync(params.project, from);
+      if (!result.success) {
+        notify.error(result.error);
+        return false; // don't close window
+      } else {
+        push(`/project/${params.project}/data/${to.path}`, { update_message: result.message });
+        //check if renamed
+        const fromLastIndexOfSlash = from.lastIndexOf("/"),
+          toLastIndexOfSlash = to.path.lastIndexOf("/");
+        if (
+          from.substr(0, fromLastIndexOfSlash) === to.path.substr(0, toLastIndexOfSlash) &&
+          from.substr(fromLastIndexOfSlash) !== to.path.substr(toLastIndexOfSlash)
+        ) {
+          notify.success(
+            `Document renamed successfully from ${from.substr(
+              fromLastIndexOfSlash + 1
+            )} to ${to.path.substr(toLastIndexOfSlash + 1)}`
+          );
+        } else {
+          notify.success(`Document moved successfully from ${from} to ${to.path}`);
+        }
+      }
+    }
+    return true;
+  };
+
   return (
     <>
       <AddCollectionDialog
@@ -199,14 +216,14 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         parentPath={path}
         open={startCollectionToggle.open}
         onClose={startCollectionToggle.handleClose}
-        onSaveAsync={handleAddDocumentAsync}
+        onSaveAsync={handleCreatePathAsync}
       />
       <AddDocumentDialog
         key={"doc:" + path + addDocumentToggle.open}
         parentPath={path}
         open={addDocumentToggle.open}
         onClose={addDocumentToggle.handleClose}
-        onSaveAsync={handleAddDocumentAsync}
+        onSaveAsync={handleCreatePathAsync}
       />
       <AddFieldDialog
         key={"fld:" + path + addFieldToggle.open}
@@ -214,6 +231,13 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         open={addFieldToggle.open}
         onClose={addFieldToggle.handleClose}
         onSaveAsync={handleUpdateDocumentAsync}
+      />
+      <RenameMoveCopyDocumentDialog
+        key={"cmd:" + path + renameMoveCopyDocumentToggle.open}
+        path={path}
+        open={renameMoveCopyDocumentToggle.open}
+        onClose={renameMoveCopyDocumentToggle.handleClose}
+        onSaveAsync={handleRenameMoveCopyDocumentAsync}
       />
       <List dense disablePadding>
         <ListItem button divider onClick={() => push(`/project/${params.project}/data/${path}`)}>
@@ -232,12 +256,12 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
           />
           {type !== "project" && (
             <ListItemSecondaryAction sx={{ right: 0 }}>
-              <Tooltip title="Copy name">
+              <Tooltip title="Copy name" placement="top">
                 <IconButton size="small" onClick={handleCopyName}>
                   <ContentCopyIcon fontSize="sm" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Actions">
+              <Tooltip title="Actions" placement="top">
                 <IconButton size="small" onClick={menu.handleOpen}>
                   <MoreVertIcon fontSize="sm" />
                 </IconButton>
@@ -249,6 +273,11 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
           {type === "collection" && (
             <MenuItem disabled>
               <ListItemText primary="Delete collection (not implemented)" />
+            </MenuItem>
+          )}
+          {type === "document" && (
+            <MenuItem onClick={handleOpenCopyMoveDocument} divider>
+              <ListItemText primary="Rename / Move / Copy document" />
             </MenuItem>
           )}
           {type === "document" && (
@@ -353,6 +382,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
           <DocumentFields
             path={path}
             fields={fields}
+            fieldsJsonRef={docRef}
             view={codeView.open ? "code" : "tree"}
             updateDocumentToggle={updateDocumentToggle}
             onUpdateDocumentAsync={handleUpdateDocumentAsync}
