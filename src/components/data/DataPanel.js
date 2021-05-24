@@ -35,12 +35,17 @@ import AddFieldDialog from "./AddFieldDialog";
 import copyToClipboard from "../../helpers/copyToClipboard";
 import FirestoreIcon from "../FirestoreIcon";
 import RenameMoveCopyDocumentDialog from "./RenameMoveCopyDocumentDialog";
+import { FixedSizeList } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer";
 import ApiClient from "./apiClient";
+
+const onlyIconsList = { "& .MuiListItemIcon-root": { minWidth: "32px" } };
 
 const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
   const menu = useMenu(),
     params = useParams(),
-    [setPrompt] = usePrompt();
+    [setPrompt] = usePrompt(),
+    windowListRef = useRef();
   const { push } = useHistory();
   const startCollectionToggle = useToggle(),
     addDocumentToggle = useToggle(),
@@ -209,6 +214,44 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
     return true;
   };
 
+  const renderItemRow = ({ index, style }) => {
+    const item = items[index];
+    return (
+      <ListItem
+        button
+        key={item.id}
+        onClick={() => push(`/project/${params.project}/data/${item.path}`)}
+        sx={{
+          backgroundColor: selectedPath === item.path ? "action.selected" : undefined
+        }}
+        style={style}
+      >
+        <ListItemText
+          primary={item.id}
+          primaryTypographyProps={{
+            sx: {
+              opacity: selectedPath === item.path ? 1 : item.missing ? 0.4 : 0.5,
+              fontFamily: '"Roboto Mono", monospace',
+              fontStyle: item.missing ? "italic" : undefined,
+              paddingLeft: 4,
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+              overflowY: "clip"
+            }
+          }}
+          data-path={item.path}
+        />
+        {selectedPath === item.path && (
+          <div>
+            <ListItemSecondaryAction sx={{ right: 0 }}>
+              <NavigateNextIcon />
+            </ListItemSecondaryAction>
+          </div>
+        )}
+      </ListItem>
+    );
+  };
+
   return (
     <>
       <AddCollectionDialog
@@ -239,7 +282,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         onClose={renameMoveCopyDocumentToggle.handleClose}
         onSaveAsync={handleRenameMoveCopyDocumentAsync}
       />
-      <List dense disablePadding>
+      <List dense disablePadding sx={onlyIconsList}>
         <ListItem button divider onClick={() => push(`/project/${params.project}/data/${path}`)}>
           <ListItemIcon>
             {type === "project" ? (
@@ -291,7 +334,12 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
             </MenuItem>
           )}
         </Menu>
-        <ListItem button selected onClick={addActionHandler}>
+        <ListItem
+          button
+          selected
+          onClick={addActionHandler}
+          sx={{ "&.MuiButtonBase-root": { backgroundColor: "white" } }}
+        >
           <ListItemIcon>
             <AddIcon fontSize="small" color="primary" />
           </ListItemIcon>
@@ -302,51 +350,36 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         </ListItem>
       </List>
       <Box
+        ref={windowListRef}
         sx={{
           borderBottom: 1,
           borderColor: "divider",
           overflow: "auto",
-          flex: "1 30%"
+          flex: items?.length ? "1 30%" : "0"
         }}
       >
-        <List dense disablePadding sx={{ overflow: "hidden" }}>
-          {items?.map(item => (
-            <ListItem
-              button
-              key={item.id}
-              onClick={() => push(`/project/${params.project}/data/${item.path}`)}
-              sx={{
-                backgroundColor: selectedPath === item.path ? "action.selected" : undefined
-              }}
+        <AutoSizer>
+          {({ width, height }) => (
+            <FixedSizeList
+              itemCount={items?.length ?? 0}
+              itemSize={36}
+              width={width}
+              height={height - 20}
+              style={{ overflowX: "hidden" }}
             >
-              <ListItemText
-                inset
-                primary={item.id}
-                primaryTypographyProps={{
-                  sx: {
-                    opacity: selectedPath === item.path ? 1 : item.missing ? 0.4 : 0.5,
-                    fontFamily: '"Roboto Mono", monospace',
-                    fontStyle: item.missing ? "italic" : undefined,
-
-                    whiteSpace: "nowrap",
-                    textOverflow: "ellipsis",
-                    overflowY: "clip"
-                  }
-                }}
-                data-path={item.path}
-              />
-              {selectedPath === item.path && (
-                <ListItemSecondaryAction sx={{ right: 0 }}>
-                  <NavigateNextIcon />
-                </ListItemSecondaryAction>
-              )}
-            </ListItem>
-          ))}
-        </List>
+              {renderItemRow}
+            </FixedSizeList>
+          )}
+        </AutoSizer>
       </Box>
       {type === "document" && (
-        <List dense disablePadding>
-          <ListItem button selected onClick={addFieldToggle.handleOpen}>
+        <List dense disablePadding sx={onlyIconsList}>
+          <ListItem
+            button
+            selected
+            onClick={addFieldToggle.handleOpen}
+            sx={{ "&.MuiButtonBase-root": { backgroundColor: "white" } }}
+          >
             <ListItemIcon>
               <AddIcon fontSize="small" color="primary" />
             </ListItemIcon>
