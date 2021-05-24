@@ -14,7 +14,6 @@ import {
   Typography
 } from "@material-ui/core";
 import {
-  Add as AddIcon,
   Code as CodeIcon,
   CollectionsBookmark as CollectionsBookmarkIcon,
   ContentCopy as ContentCopyIcon,
@@ -38,6 +37,7 @@ import RenameMoveCopyDocumentDialog from "./RenameMoveCopyDocumentDialog";
 import { FixedSizeList } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import ApiClient from "./apiClient";
+import DataPanelAddButton from "./DataPanelAddButton";
 
 const onlyIconsList = { "& .MuiListItemIcon-root": { minWidth: "32px" } };
 
@@ -152,18 +152,6 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
   }, [selectedPath]);
 
   const lastPart = path?.split("/").pop();
-  let addActionTitle, addActionHandler;
-  switch (type) {
-    case "project":
-    case "document":
-      addActionTitle = "Start collection";
-      addActionHandler = startCollectionToggle.handleOpen;
-      break;
-    case "collection":
-      addActionTitle = "Add document";
-      addActionHandler = addDocumentToggle.handleOpen;
-      break;
-  }
 
   const handleCopyName = () => {
     menu.handleClose();
@@ -334,20 +322,11 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
             </MenuItem>
           )}
         </Menu>
-        <ListItem
-          button
-          selected
-          onClick={addActionHandler}
-          sx={{ "&.MuiButtonBase-root": { backgroundColor: "white" } }}
-        >
-          <ListItemIcon>
-            <AddIcon fontSize="small" color="primary" />
-          </ListItemIcon>
-          <ListItemText
-            primaryTypographyProps={{ color: "primary", variant: "subtitle2" }}
-            primary={addActionTitle}
-          />
-        </ListItem>
+        {type === "collection" ? (
+          <DataPanelAddButton onClick={addDocumentToggle.handleOpen} title="Add document" />
+        ) : (
+          <DataPanelAddButton onClick={startCollectionToggle.handleOpen} title="Start collection" />
+        )}
       </List>
       <Box
         ref={windowListRef}
@@ -373,34 +352,20 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         </AutoSizer>
       </Box>
       {type === "document" && (
-        <List dense disablePadding sx={onlyIconsList}>
-          <ListItem
-            button
-            selected
-            onClick={addFieldToggle.handleOpen}
-            sx={{ "&.MuiButtonBase-root": { backgroundColor: "white" } }}
-          >
-            <ListItemIcon>
-              <AddIcon fontSize="small" color="primary" />
-            </ListItemIcon>
-            <ListItemText
-              primaryTypographyProps={{ color: "primary", variant: "subtitle2" }}
-              primary="Add field"
-            />
-            <ListItemSecondaryAction sx={{ right: 0 }}>
-              <Tooltip title="Toggle code/fields view">
-                <IconButton size="small" onClick={codeView.handleToggle}>
-                  <CodeIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Update document fields">
-                <IconButton size="small" onClick={updateDocumentToggle.handleOpen}>
-                  <EditIcon />
-                </IconButton>
-              </Tooltip>
-            </ListItemSecondaryAction>
-          </ListItem>
-        </List>
+        <DataPanelAddButton onClick={addFieldToggle.handleOpen} title="Add field">
+          <ListItemSecondaryAction sx={{ right: 0 }}>
+            <Tooltip title="Toggle code/fields view">
+              <IconButton size="small" onClick={codeView.handleToggle}>
+                <CodeIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Update document fields">
+              <IconButton size="small" onClick={updateDocumentToggle.handleOpen}>
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+          </ListItemSecondaryAction>
+        </DataPanelAddButton>
       )}
       {type === "document" && (
         <Box
