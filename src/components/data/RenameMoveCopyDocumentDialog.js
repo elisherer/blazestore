@@ -10,6 +10,7 @@ import {
   TextField
 } from "@material-ui/core";
 import DialogTitleWithActions from "../DialogTitleActions";
+import { validateDocPath } from "./utils";
 
 const RenameMoveCopyDocumentDialog = ({
   open,
@@ -28,7 +29,7 @@ const RenameMoveCopyDocumentDialog = ({
     recursive: false
   }));
 
-  let invalid = form.path.split("/").length % 2 > 0;
+  let invalidPath = validateDocPath(form.path);
 
   return (
     <Dialog
@@ -65,8 +66,8 @@ const RenameMoveCopyDocumentDialog = ({
             InputLabelProps={{
               shrink: true
             }}
-            error={invalid}
-            helperText={invalid ? "Path must be of a document (multiple of 2)" : " "}
+            error={invalidPath}
+            helperText={invalidPath || " "}
           />
           <FormControlLabel
             control={
@@ -102,7 +103,7 @@ const RenameMoveCopyDocumentDialog = ({
               onClose();
             });
           }}
-          disabled={invalid}
+          disabled={invalidPath}
         >
           Save
         </Button>

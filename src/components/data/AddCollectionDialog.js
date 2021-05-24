@@ -16,6 +16,7 @@ import { useMemo, useState } from "react";
 import uuid from "../../helpers/uuid";
 import { Casino as CasinoIcon } from "@material-ui/icons";
 import EditDocumentForm from "./EditDocumentForm";
+import { validateName } from "./utils";
 
 const AddCollectionDialog = ({
   open,
@@ -40,8 +41,8 @@ const AddCollectionDialog = ({
   }, [form.fieldsString]);
 
   const invalidFieldsValue = typeof fields === "object" && fields instanceof Error;
-  const invalidCollectionId = form.collectionId.includes("/");
-  const invalidDocumentId = form.documentId.includes("/");
+  const invalidCollectionId = validateName(form.collectionId);
+  const invalidDocumentId = validateName(form.documentId);
 
   return (
     <Dialog
@@ -78,7 +79,10 @@ const AddCollectionDialog = ({
               sx={{ width: "50%" }}
               label="Collection ID"
               error={invalidCollectionId}
-              helperText="Choose an ID that describes the documents you’ll add to this collection (must not include /)."
+              helperText={
+                invalidCollectionId ||
+                "Choose an ID that describes the documents you’ll add to this collection."
+              }
               variant="outlined"
               value={form.collectionId}
               onChange={e => {

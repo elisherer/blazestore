@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Button, Dialog, DialogActions, DialogContent } from "@material-ui/core";
 import DialogTitleWithActions from "../DialogTitleActions";
 import EditDocumentForm from "./EditDocumentForm";
+import { validateName } from "./utils";
 
 const AddDocumentDialog = ({
   open,
@@ -25,7 +26,7 @@ const AddDocumentDialog = ({
   }, [form.fieldsString]);
 
   const invalidFieldsValue = typeof fields === "object" && fields instanceof Error;
-  const invalidDocumentId = form.documentId.includes("/");
+  const invalidDocumentId = validateName(form.documentId);
 
   return (
     <Dialog
