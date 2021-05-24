@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
-  Box,
   Button,
   Checkbox,
   Dialog,
@@ -8,9 +7,7 @@ import {
   DialogContent,
   FormControlLabel,
   FormGroup,
-  FormLabel,
-  TextField,
-  Typography
+  TextField
 } from "@material-ui/core";
 import DialogTitleWithActions from "../DialogTitleActions";
 
@@ -26,7 +23,7 @@ const RenameMoveCopyDocumentDialog = ({
   onSaveAsync?: Function
 }) => {
   const [form, setForm] = useState(() => ({
-    path,
+    path: path || "",
     move: true,
     recursive: false
   }));

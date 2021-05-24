@@ -164,7 +164,7 @@ const DocumentFields = ({
     const t = renderTree(ctx, "", fields);
     fieldsJsonRef.current = t.json;
     return t;
-  }, [fields, ctx]);
+  }, [fieldsJsonRef, fields, ctx]);
 
   return (
     <>
