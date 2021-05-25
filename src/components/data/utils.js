@@ -6,13 +6,13 @@ export const validateName = id => {
     return "Must be no longer than 1,500 bytes";
   }
   if (!/^[^/?]*$/.test(id)) {
-    return "Cannot contain a forward slash (/) or a question mark (?)";
+    return "Can't contain a forward slash (/)";
   }
-  if (id === "." || id === "..") {
-    return "Cannot solely consist of a single period (.) or double periods (..)";
+  if (id.startsWith(".")) {
+    return "Can't start with a dot (.)";
   }
   if (/__.*__/.test(id)) {
-    return "Cannot match the regular expression __.*__";
+    return "Can't start and end with double underscores (__)";
   }
   return false;
 };
