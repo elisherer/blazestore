@@ -2,7 +2,7 @@
 const enc = new TextEncoder();
 
 export const validateName = id => {
-  if (enc(id).length > 1500) {
+  if (enc.encode(id).length > 1500) {
     return "Must be no longer than 1,500 bytes";
   }
   if (!/^[^/?]*$/.test(id)) {

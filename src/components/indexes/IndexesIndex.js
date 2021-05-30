@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Grid, Tab, Tabs, Typography } from "@material-ui/core";
+import { Grid, IconButton, Tab, Tabs, Typography } from "@material-ui/core";
 import { useParams } from "react-router-dom";
 import GroupingTable from "./GroupingTable";
+import { Search } from "@material-ui/icons";
 
 const capitalize = word => word[0].toUpperCase() + word.substr(1);
 const getDescriber = field => {
@@ -35,6 +36,18 @@ const fieldsColumns = [
   }
 ];
 
+const handleQuery = (project, name) => {
+  fetch(`/api/project/${project}/indexes/${name}`)
+    .then(x => x.json())
+    .then(res => {
+      alert("Check console for items");
+      console.table(res.result.items);
+    })
+    .catch(e => {
+      if (e.name !== "AbortError") throw e;
+    });
+};
+
 const indexesColumns = [
   { id: "name", label: "Collection ID", minWidth: 170, format: name => name.split("/")[5] },
   {
@@ -61,6 +74,16 @@ const indexesColumns = [
     id: "state",
     label: "Status",
     format: state => (state === "READY" ? "Enabled" : state.toLowerCase())
+  },
+  {
+    id: "query",
+    label: "Query",
+    format: (_, row) =>
+      row.queryScope === "COLLECTION_GROUP" && (
+        <IconButton onClick={() => handleQuery(row.name.split("/")[1], row.name.split("/")[5])}>
+          <Search />
+        </IconButton>
+      )
   }
 ];
 

@@ -215,6 +215,24 @@ const api = () => {
     }
   });
 
+  router.get("/project/:project/indexes/:index", async (req, res) => {
+    try {
+      const firestore = getApp(req).firestore();
+      const items = await firestore.collectionGroup(req.params.index).limit(50).get();
+
+      res.send({
+        result: {
+          type: "index-query",
+          items: items.docs.map(doc => doc.ref.path)
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500);
+      res.send({ error: err.message });
+    }
+  });
+
   router.get("/project/:project/indexes", async (req, res) => {
     try {
       const indexes = await fsac.listIndexes({

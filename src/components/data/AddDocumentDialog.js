@@ -26,7 +26,7 @@ const AddDocumentDialog = ({
   }, [form.fieldsString]);
 
   const invalidFieldsValue = typeof fields === "object" && fields instanceof Error;
-  const invalidDocumentId = validateName(form.documentId);
+  const invalidDocumentId = open && validateName(form.documentId);
 
   return (
     <Dialog

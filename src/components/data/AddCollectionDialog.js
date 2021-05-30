@@ -41,8 +41,8 @@ const AddCollectionDialog = ({
   }, [form.fieldsString]);
 
   const invalidFieldsValue = typeof fields === "object" && fields instanceof Error;
-  const invalidCollectionId = validateName(form.collectionId);
-  const invalidDocumentId = validateName(form.documentId);
+  const invalidCollectionId = open && validateName(form.collectionId);
+  const invalidDocumentId = open && validateName(form.documentId);
 
   return (
     <Dialog
