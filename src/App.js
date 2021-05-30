@@ -14,6 +14,7 @@ import { LocalizationProvider } from "@material-ui/lab";
 import AdapterDateFns from "@material-ui/lab/AdapterDateFns";
 import IndexesIndex from "./components/indexes/IndexesIndex";
 import RulesIndex from "./components/rules/RulesIndex";
+import QueryIndex from "./components/query/QueryIndex";
 
 const MainContainer = styled("div")(({ theme }) => ({
   position: "relative",
@@ -74,6 +75,9 @@ const App = () => {
                         </Route>
                         <Route path="/project/:project/indexes">
                           <IndexesIndex />
+                        </Route>
+                        <Route path="/project/:project/query/:type/:path?">
+                          <QueryIndex />
                         </Route>
                         <Route path="*">
                           <NotFound />

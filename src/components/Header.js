@@ -52,12 +52,35 @@ const Header = () => {
                   ? 0
                   : location.pathname.startsWith(`/project/${project}/rules`)
                   ? 1
-                  : 2
+                  : location.pathname.startsWith(`/project/${project}/indexes`)
+                  ? 2
+                  : 3
               }
             >
-              <Tab component={NavLink} to={`/project/${project}/data`} label="DATA" />
-              <Tab component={NavLink} to={`/project/${project}/rules`} label="RULES" />
-              <Tab component={NavLink} to={`/project/${project}/indexes`} label="INDEXES" />
+              <Tab
+                component={NavLink}
+                to={`/project/${project}/data`}
+                label="DATA"
+                style={{ minWidth: "100px" }}
+              />
+              <Tab
+                component={NavLink}
+                to={`/project/${project}/rules`}
+                label="RULES"
+                style={{ minWidth: "100px" }}
+              />
+              <Tab
+                component={NavLink}
+                to={`/project/${project}/indexes`}
+                label="INDEXES"
+                style={{ minWidth: "100px" }}
+              />
+              <Tab
+                component={NavLink}
+                to={`/project/${project}/query/collectionGroup/`}
+                label="QUERY"
+                style={{ minWidth: "100px" }}
+              />
             </Tabs>
             <Menu {...projectDropDownMenu.Props}>
               {userContext.projects.map(proj => (

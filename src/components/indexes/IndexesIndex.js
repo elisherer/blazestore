@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Grid, IconButton, Tab, Tabs, Typography } from "@material-ui/core";
+import { Box, IconButton, Tab, Tabs, TextField, Typography } from "@material-ui/core";
 import { useParams } from "react-router-dom";
-import GroupingTable from "./GroupingTable";
+import GroupingTable from "../GroupingTable";
 import { Search } from "@material-ui/icons";
 
 const capitalize = word => word[0].toUpperCase() + word.substr(1);
@@ -14,8 +14,8 @@ const getDescriber = field => {
   }
 };
 const fieldsColumns = [
-  { id: "name", label: "Collection ID", minWidth: 170, format: name => name.split("/")[5] },
-  { id: "name", label: "Field path", minWidth: 170, format: name => name.split("/").pop() },
+  { id: "name", label: "Collection ID", minWidth: 120, format: name => name.split("/")[5] },
+  { id: "name", label: "Field path", minWidth: 120, format: name => name.split("/").pop() },
   {
     id: "indexConfig",
     label: "Collection scope",
@@ -36,24 +36,11 @@ const fieldsColumns = [
   }
 ];
 
-const handleQuery = (project, name) => {
-  fetch(`/api/project/${project}/indexes/${name}`)
-    .then(x => x.json())
-    .then(res => {
-      alert("Check console for items");
-      console.table(res.result.items);
-    })
-    .catch(e => {
-      if (e.name !== "AbortError") throw e;
-    });
-};
-
 const indexesColumns = [
-  { id: "name", label: "Collection ID", minWidth: 170, format: name => name.split("/")[5] },
+  { id: "name", label: "Collection ID", minWidth: 120, format: name => name.split("/")[5] },
   {
     id: "fields",
     label: "Fields indexed",
-    maxWidth: 800,
     format: fields =>
       fields.map(f => (
         <span key={f.fieldPath}>
@@ -67,7 +54,7 @@ const indexesColumns = [
   {
     id: "queryScope",
     label: "Query scope",
-    minWidth: 170,
+    minWidth: 120,
     format: queryScope => capitalize(queryScope.replace(/_/g, " ").toLowerCase())
   },
   {
@@ -78,9 +65,15 @@ const indexesColumns = [
   {
     id: "query",
     label: "Query",
-    format: (_, row) =>
+    format: (_, row, history) =>
       row.queryScope === "COLLECTION_GROUP" && (
-        <IconButton onClick={() => handleQuery(row.name.split("/")[1], row.name.split("/")[5])}>
+        <IconButton
+          onClick={() =>
+            history.push(
+              `/project/${row.name.split("/")[1]}/query/collectionGroup/${row.name.split("/")[5]}`
+            )
+          }
+        >
           <Search />
         </IconButton>
       )
@@ -92,6 +85,7 @@ const IndexesIndex = () => {
   const [view, setView] = useState("composite");
   const [indexes, setIndexes] = useState();
   const [fields, setFields] = useState();
+  const [filter, setFilter] = useState("");
   useEffect(() => {
     if (view === "composite") {
       setIndexes(null);
@@ -119,25 +113,47 @@ const IndexesIndex = () => {
   }, [params.project, view]);
 
   return (
-    <Grid container direction="column" sx={{ margin: "24px auto", width: "90%" }}>
-      <Grid item>
-        <Tabs
-          value={view === "composite" ? 0 : 1}
-          onChange={(e, v) => setView(v === 1 ? "fields" : "composite")}
-        >
-          <Tab label="Composite" />
-          <Tab label="Single field" />
-        </Tabs>
-      </Grid>
-      <Grid item xs sx={{ overflow: "auto" }}>
+    <Box
+      sx={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        margin: "24px auto",
+        width: "90%"
+      }}
+    >
+      <Tabs
+        value={view === "composite" ? 0 : 1}
+        onChange={(e, v) => setView(v === 1 ? "fields" : "composite")}
+      >
+        <Tab label="Composite" />
+        <Tab label="Single field" />
+      </Tabs>
+      <Box sx={{ position: "absolute", right: 0 }}>
+        <TextField
+          size="small"
+          type="search"
+          label="Filter"
+          variant="outlined"
+          value={filter}
+          onChange={e => setFilter(e.target.value)}
+        />
+      </Box>
+      <Box sx={{ overflow: "auto", minWidth: "90" }}>
         {view === "composite" && indexes?.slice && (
-          <GroupingTable rows={indexes} columns={indexesColumns} />
+          <GroupingTable
+            rows={filter ? indexes.filter(x => x.name.includes(filter)) : indexes}
+            columns={indexesColumns}
+          />
         )}
         {view === "fields" && fields?.slice && (
-          <GroupingTable rows={fields} columns={fieldsColumns} />
+          <GroupingTable
+            rows={filter ? fields.filter(x => x.name.includes(filter)) : fields}
+            columns={fieldsColumns}
+          />
         )}
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 };
 

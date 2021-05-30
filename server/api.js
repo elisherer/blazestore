@@ -215,24 +215,6 @@ const api = () => {
     }
   });
 
-  router.get("/project/:project/indexes/:index", async (req, res) => {
-    try {
-      const firestore = getApp(req).firestore();
-      const items = await firestore.collectionGroup(req.params.index).limit(50).get();
-
-      res.send({
-        result: {
-          type: "index-query",
-          items: items.docs.map(doc => doc.ref.path)
-        }
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500);
-      res.send({ error: err.message });
-    }
-  });
-
   router.get("/project/:project/indexes", async (req, res) => {
     try {
       const indexes = await fsac.listIndexes({
@@ -303,6 +285,31 @@ const api = () => {
         result: {
           type: "ruleset",
           ruleset
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500);
+      res.send({ error: err.message });
+    }
+  });
+
+  router.get("/project/:project/query/:type/:path", async (req, res) => {
+    try {
+      const firestore = getApp(req).firestore();
+      let items = [];
+
+      if (req.params.type === "collectionGroup") {
+        items = await firestore
+          .collectionGroup(req.params.path)
+          .limit(Math.min(parseInt(req.query.limit || "50"), 50))
+          .get();
+        items = items.docs.map(doc => ({ path: doc.ref.path }));
+      }
+      res.send({
+        result: {
+          type: "query",
+          items
         }
       });
     } catch (err) {
