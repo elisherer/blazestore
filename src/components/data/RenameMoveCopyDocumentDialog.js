@@ -66,7 +66,7 @@ const RenameMoveCopyDocumentDialog = ({
             InputLabelProps={{
               shrink: true
             }}
-            error={invalidPath}
+            error={Boolean(invalidPath)}
             helperText={invalidPath || " "}
           />
           <FormControlLabel
@@ -103,7 +103,7 @@ const RenameMoveCopyDocumentDialog = ({
               onClose();
             });
           }}
-          disabled={invalidPath}
+          disabled={Boolean(invalidPath)}
         >
           Save
         </Button>

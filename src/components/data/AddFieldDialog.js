@@ -201,7 +201,7 @@ const AddFieldDialog = ({
               [form.key]: form.value
             }).then(onClose);
           }}
-          disabled={invalid}
+          disabled={Boolean(invalid)}
         >
           Save
         </Button>

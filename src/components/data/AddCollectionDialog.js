@@ -78,7 +78,7 @@ const AddCollectionDialog = ({
               margin="dense"
               sx={{ width: "50%" }}
               label="Collection ID"
-              error={invalidCollectionId}
+              error={Boolean(invalidCollectionId)}
               helperText={
                 invalidCollectionId ||
                 "Choose an ID that describes the documents you’ll add to this collection."
@@ -123,7 +123,7 @@ const AddCollectionDialog = ({
             variant="contained"
             disableElevation
             onClick={() => setStep(step => step + 1)}
-            disabled={!form.collectionId || invalidCollectionId}
+            disabled={Boolean(!form.collectionId || invalidCollectionId)}
           >
             Next
           </Button>
@@ -140,13 +140,13 @@ const AddCollectionDialog = ({
                 fields
               ).then(onClose)
             }
-            disabled={
+            disabled={Boolean(
               !form.collectionId ||
-              !form.documentId ||
-              invalidFieldsValue ||
-              invalidDocumentId ||
-              invalidCollectionId
-            }
+                !form.documentId ||
+                invalidFieldsValue ||
+                invalidDocumentId ||
+                invalidCollectionId
+            )}
           >
             Save
           </Button>

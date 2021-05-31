@@ -41,7 +41,7 @@ const EditDocumentForm = ({
               label="Document ID"
               variant="outlined"
               value={form.documentId}
-              error={documentIdInvalid}
+              error={Boolean(documentIdInvalid)}
               helperText={documentIdInvalid || " "}
               readOnly={update}
               onChange={e => setForm({ ...form, documentId: e.target.value })}

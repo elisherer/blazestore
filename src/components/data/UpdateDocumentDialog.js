@@ -57,7 +57,7 @@ const UpdateDocumentDialog = ({
           disableElevation
           variant="contained"
           onClick={() => onSaveAsync(parentPath, fields).then(onClose)}
-          disabled={invalidFieldsValue}
+          disabled={Boolean(invalidFieldsValue)}
         >
           Save
         </Button>

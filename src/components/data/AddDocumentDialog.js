@@ -55,7 +55,7 @@ const AddDocumentDialog = ({
           disableElevation
           variant="contained"
           onClick={() => onSaveAsync(`${parentPath}/${form.documentId}`, fields).then(onClose)}
-          disabled={!form.documentId || invalidFieldsValue || invalidDocumentId}
+          disabled={Boolean(!form.documentId || invalidFieldsValue || invalidDocumentId)}
         >
           Save
         </Button>
