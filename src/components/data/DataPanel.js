@@ -134,8 +134,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
   const handleUpdateDocumentAsync = async (path, fields) => {
     const result = await ApiClient.updateDocumentFieldsAsync(params.project, path, fields);
     if (result.success) {
-      const parentPath = path.split("/").slice(0, -1).join("/");
-      push(`/project/${params.project}/data/${parentPath}`, { update_message: result.message });
+      push(`/project/${params.project}/data/${path}`, { update_message: result.message });
       notify.success(result.message);
     } else {
       notify.error(result.error);
