@@ -131,10 +131,11 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
     return true;
   };
 
-  const handleUpdateDocumentAsync = async (path, fields) => {
+  const handleUpdateDocumentAsync = async (path, fields, dontPush) => {
     const result = await ApiClient.updateDocumentFieldsAsync(params.project, path, fields);
     if (result.success) {
-      push(`/project/${params.project}/data/${path}`, { update_message: result.message });
+      !dontPush &&
+        push(`/project/${params.project}/data/${path}`, { update_message: result.message });
       notify.success(result.message);
     } else {
       notify.error(result.error);
