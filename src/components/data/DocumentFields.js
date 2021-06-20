@@ -22,7 +22,7 @@ const printValue = (desc, ctx) => {
   const val = desc[desc.valueType];
   switch (desc.valueType) {
     case "stringValue":
-      return `"${val}"`;
+      return <span style={{ whiteSpace: "pre-wrap" }}>&quot;{val}&quot;</span>;
     case "timestampValue":
       return `${new Date(tsToDate(Number(val.seconds), val.nanos)).toGMTString()}`;
     case "booleanValue":
