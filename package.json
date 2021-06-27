@@ -27,6 +27,7 @@
     "copy-to-clipboard": "3.3.1",
     "core-js": "3.9.1",
     "date-fns": "2.21.3",
+    "firebase-tools": "9.14.0",
     "install": "0.13.0",
     "monaco-editor": "0.23.0",
     "npm": "7.12.1",

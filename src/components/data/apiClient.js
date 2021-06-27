@@ -13,8 +13,9 @@ const apiCallAsync = async (url, init) => {
 };
 
 const ApiClient = {
-  async deletePathAsync(project, path) {
-    return apiCallAsync(`/api/project/${project}/data/${path}`, {
+  async deletePathAsync(project, path, confirmation) {
+    const search = confirmation ? "?confirmation=" + encodeURIComponent(confirmation) : "";
+    return apiCallAsync(`/api/project/${project}/data/${path}${search}`, {
       method: "DELETE"
     });
   },

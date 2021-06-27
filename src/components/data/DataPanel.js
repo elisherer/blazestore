@@ -1,6 +1,7 @@
 import useMenu from "../hooks/useMenu";
 import {
   Alert,
+  Badge,
   Box,
   IconButton,
   List,
@@ -19,6 +20,7 @@ import {
   ContentCopy as ContentCopyIcon,
   Description as DescriptionIcon,
   Edit as EditIcon,
+  FilterList as FilterListIcon,
   MoreVert as MoreVertIcon,
   NavigateNext as NavigateNextIcon
 } from "@material-ui/icons";
@@ -28,7 +30,7 @@ import { useHistory, useParams } from "react-router-dom";
 import DocumentFields from "./DocumentFields";
 import AddDocumentDialog from "./AddDocumentDialog";
 import { useNotification } from "../NotificationProvider/NotificationProvider";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePrompt } from "../PromptProvider/PromptProvider";
 import AddFieldDialog from "./AddFieldDialog";
 import copyToClipboard from "../../helpers/copyToClipboard";
@@ -38,6 +40,7 @@ import { FixedSizeList } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import ApiClient from "./apiClient";
 import DataPanelAddButton from "./DataPanelAddButton";
+import QueryPopover from "../QueryPopover";
 
 const onlyIconsList = { "& .MuiListItemIcon-root": { minWidth: "32px" } };
 
@@ -54,31 +57,40 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
     renameMoveCopyDocumentToggle = useToggle(),
     codeView = useToggle(),
     notify = useNotification(),
-    docRef = useRef();
+    docRef = useRef(),
+    queryToggleRef = useRef();
+  const [queryOpen, setQueryOpen] = useState(false),
+    [queryApplied, setQueryApplied] = useState(null);
 
   const handleDeleteItem = async () => {
+    const pathParts = path.split("/");
+    const isDoc = pathParts.length % 2 === 0;
     setPrompt({
-      title: "Delete document",
+      title: `Delete ${isDoc ? "document" : "collection"}`,
       message: (
         <div>
           <Alert severity="error">
             This will permanently delete all data at this location, including all nested data.
           </Alert>
-          <Typography variant="caption">Document location</Typography>
+          <Typography variant="caption">{isDoc ? "Document" : "Collection"} location</Typography>
           <Typography>{path}</Typography>
         </div>
       ),
       dangerous: true,
       name: "Start delete",
-      action: async () => {
-        const result = await ApiClient.deletePathAsync(params.project, path);
+      inputText: isDoc ? undefined : "Confirm you want to delete this collection by typing its ID:",
+      inputHint: pathParts[pathParts.length - 1],
+      action: async (actionTaken, input) => {
+        const result = await ApiClient.deletePathAsync(params.project, path, input);
         if (result.success) {
           const parentPath = path.split("/").slice(0, -1).join("/");
           push(`/project/${params.project}/data/${parentPath}`);
           notify.success(result.message);
+          return true; // close dialog
         } else {
           notify.error(result.error);
         }
+        return false;
       }
     });
     menu.handleClose();
@@ -111,9 +123,11 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
           const parentPath = path.split("/").slice(0, -1).join("/");
           push(`/project/${params.project}/data/${parentPath}`);
           notify.success(result.message);
+          return true; // close dialog
         } else {
           notify.error(result.error);
         }
+        return false;
       }
     });
     menu.handleClose();
@@ -292,18 +306,41 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
                   <ContentCopyIcon fontSize="sm" />
                 </IconButton>
               </Tooltip>
+              {type === "collection" && (
+                <Tooltip title="Query" placement="top">
+                  <IconButton ref={queryToggleRef} size="small" onClick={() => setQueryOpen(true)}>
+                    <Badge color="primary" variant="dot" invisible={!queryApplied}>
+                      <FilterListIcon />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+              )}
               <Tooltip title="Actions" placement="top">
                 <IconButton size="small" onClick={menu.handleOpen}>
-                  <MoreVertIcon fontSize="sm" />
+                  <MoreVertIcon />
                 </IconButton>
               </Tooltip>
             </ListItemSecondaryAction>
           )}
         </ListItem>
+        <QueryPopover
+          name={lastPart}
+          open={queryOpen}
+          onClose={() => setQueryOpen(false)}
+          anchorEl={queryToggleRef.current}
+          onClear={() => {
+            setQueryApplied(null);
+            setQueryOpen(false);
+          }}
+          onApply={obj => {
+            setQueryApplied(obj);
+            setQueryOpen(false);
+          }}
+        />
         <Menu {...menu.Props}>
           {type === "collection" && (
-            <MenuItem disabled>
-              <ListItemText primary="Delete collection (not implemented)" />
+            <MenuItem onClick={handleDeleteItem}>
+              <ListItemText primary="Delete collection" />
             </MenuItem>
           )}
           {type === "document" && (

@@ -2,6 +2,7 @@ const config = require("./config");
 const express = require("express");
 const mapper = require("./mapper");
 const { v1 } = require("@google-cloud/firestore");
+const firebase_tools = require("firebase-tools");
 
 let fsac;
 // init firebase
@@ -181,8 +182,20 @@ const api = () => {
         });
       } else {
         // collection
-        res.status(400);
-        res.send({ error: "You can't delete a collection (only documents)" });
+        const collectionName = path.split("/").pop();
+        if (req.query.confirmation !== collectionName) {
+          res.status(400);
+          res.send({ error: "'confirmation' field value must equal the collection name" });
+          return;
+        }
+        await firebase_tools.firestore.delete(path, {
+          project: req.params.project,
+          recursive: true,
+          yes: true
+        });
+        res.send({
+          result: `Collection ${path} successfully deleted. (At ${Date.now()})`
+        });
       }
     } catch (err) {
       console.error(err);

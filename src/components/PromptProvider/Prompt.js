@@ -1,29 +1,59 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from "@material-ui/core";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  TextField
+} from "@material-ui/core";
 import DialogTitleWithActions from "../DialogTitleActions";
 import { usePrompt } from "./PromptProvider";
+import { useState } from "react";
 
 const Prompt = () => {
   const [setPrompt, prompt] = usePrompt();
+  const [input, setInput] = useState("");
 
   const handleAction = () => {
     const action = prompt.action;
     const actionTaken = prompt.name;
-    setPrompt(null);
-    action && action(actionTaken);
+    if (action) {
+      action(actionTaken, input).then(result => {
+        if (result) {
+          setPrompt(null);
+          setInput("");
+        }
+      });
+    } else {
+      setPrompt(null);
+      setInput("");
+    }
   };
 
   const handleAction2 = () => {
     const action = prompt.action;
     const actionTaken = prompt.name2;
-    setPrompt(null);
-    action && action(actionTaken);
+    if (action) {
+      action(actionTaken, input).then(result => {
+        if (result) {
+          setPrompt(null);
+          setInput("");
+        }
+      });
+    } else {
+      setPrompt(null);
+      setInput("");
+    }
   };
 
   const closeDialog = () => {
-    const closeAction = prompt.closeAction;
+    const onCloseAction = prompt.onCloseAction;
     setPrompt(null);
-    closeAction && closeAction();
+    setInput("");
+    onCloseAction && onCloseAction();
   };
+
+  const requiresInput = Boolean(prompt?.inputText);
 
   return (
     <Dialog
@@ -42,6 +72,22 @@ const Prompt = () => {
         <DialogContentText id="prompt-dialog-description" component="pre">
           {prompt?.wrapInPre ? <pre>{prompt.message}</pre> : prompt?.message}
         </DialogContentText>
+        {requiresInput && (
+          <DialogContentText component="pre">
+            <TextField
+              autoFocus
+              fullWidth
+              color="warning"
+              value={input || ""}
+              onChange={e => setInput(e.target.value)}
+              label={prompt?.inputText}
+              variant="standard"
+              focused
+              placeholder={prompt?.inputHint}
+              InputLabelProps={{ shrink: true }}
+            />
+          </DialogContentText>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={closeDialog}>{prompt?.negativeText || "Cancel"}</Button>
@@ -49,6 +95,7 @@ const Prompt = () => {
           <Button
             onClick={handleAction2}
             variant="contained"
+            disabled={requiresInput && !input}
             color={prompt?.dangerous ? "secondary" : "primary"}
             autoFocus
           >
@@ -59,6 +106,7 @@ const Prompt = () => {
           <Button
             onClick={handleAction}
             variant="contained"
+            disabled={requiresInput && !input}
             color={prompt?.dangerous ? "secondary" : "primary"}
             autoFocus
           >
