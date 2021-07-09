@@ -78,6 +78,7 @@ const QueryPopover = ({ name, open, onClose, anchorEl, onClear, onApply }) => {
         <CardContent>
           <TextField
             variant="standard"
+            type="search"
             fullWidth
             label="Filter by field"
             InputLabelProps={{ shrink: true }}
