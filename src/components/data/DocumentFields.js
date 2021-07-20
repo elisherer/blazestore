@@ -85,22 +85,27 @@ const renderTree = (ctx, path, nodes) => {
                   <Typography sx={{ fontSize: "0.9rem" }}>
                     {protoPrint(nodes[node], ctx)}
                   </Typography>
-                  {!path && (
-                    <Tooltip title="Delete field" placement="left">
-                      <IconButton
-                        size="small"
-                        sx={{
-                          position: "absolute",
-                          right: 0,
-                          display: "none",
-                          "*:hover > &": { display: "block" }
-                        }}
-                        onClick={() => ctx.deleteField(node)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  )}
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      right: 0,
+                      color: "text.secondary",
+                      bgcolor: "background.paper",
+                      display: "none",
+                      "*:hover > &": { display: "block" }
+                    }}
+                  >
+                    <Box sx={{ bgcolor: "action.hover" }}>
+                      ({nodes[node].valueType?.slice(0, -5) ?? "N/A"})
+                      {!path && (
+                        <Tooltip title="Delete field" placement="left">
+                          <IconButton size="small" onClick={() => ctx.deleteField(node)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+                  </Box>
                 </Box>
               }
             >
