@@ -242,13 +242,18 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
               paddingLeft: 4,
               whiteSpace: "nowrap",
               textOverflow: "ellipsis",
-              overflowY: "clip"
+              overflowY: "clip",
+              lineHeight: 1
             }
           }}
           secondary={item.value ? item.id : undefined}
           secondaryTypographyProps={{
             sx: {
-              paddingLeft: 4
+              paddingLeft: 4,
+              lineHeight: 0.875,
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+              overflowY: "clip"
             }
           }}
           data-path={item.path}
