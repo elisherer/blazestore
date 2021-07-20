@@ -1,5 +1,6 @@
 import { Route, Switch } from "react-router-dom";
 import DataExplorer from "./DataExplorer";
+import CollectionQueryProvider from "../CollectionQueryProvider";
 
 const DataIndex = () => {
   /*
@@ -19,7 +20,9 @@ const DataIndex = () => {
       </Tabs>*/
     <Switch>
       <Route path="/project/:project/data">
-        <DataExplorer />
+        <CollectionQueryProvider>
+          <DataExplorer />
+        </CollectionQueryProvider>
       </Route>
       <Route path="*">N/A</Route>
     </Switch>

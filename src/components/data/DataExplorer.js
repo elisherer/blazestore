@@ -8,11 +8,25 @@ import Lookup from "./Lookup";
 import { ContentCopy as ContentCopyIcon } from "@material-ui/icons";
 import OverlayLoader from "../OverlayLoader";
 import { useNotification } from "../NotificationProvider/NotificationProvider";
+import { useCollectionQuery } from "../CollectionQueryProvider";
+
+const toQuery = q => {
+  if (!q) return "";
+  const params = {
+    field: q.field,
+    cond: q.condition,
+    cond_val_type: q.conditionValueType,
+    cond_val: q.conditionValue,
+    sort: q.sort
+  };
+  return "?" + new URLSearchParams(params).toString();
+};
 
 const DataExplorer = () => {
   const params = useParams();
   const location = useLocation();
   const notify = useNotification();
+  const [queries] = useCollectionQuery();
   const update_message = location.state?.update_message;
   const [lookupValue, setLookupValue] = useState();
 
@@ -32,6 +46,10 @@ const DataExplorer = () => {
   const [panel1Path, setPanel1Path] = useState(null);
   const [panel2Path, setPanel2Path] = useState(null);
   const [panel3Path, setPanel3Path] = useState(null);
+
+  const panel1Query = queries[panel1Path],
+    panel2Query = queries[panel2Path],
+    panel3Query = queries[panel3Path];
 
   useEffect(() => {
     const parts = location.pathname.split("/").slice(4);
@@ -60,7 +78,7 @@ const DataExplorer = () => {
       setPanel1(null);
       const controller = new AbortController();
       const { signal } = controller;
-      fetch(`/api/project/${params.project}/data/${panel1Path}`, { signal })
+      fetch(`/api/project/${params.project}/data/${panel1Path}${toQuery(panel1Query)}`, { signal })
         .then(x => x.json())
         .then(res => setPanel1(res.result))
         .catch(e => {
@@ -68,7 +86,7 @@ const DataExplorer = () => {
         });
       return () => controller.abort();
     }
-  }, [panel1Path, params.project, update_message]);
+  }, [panel1Path, params.project, update_message, panel1Query]);
 
   // panel2 effect
   useEffect(() => {
@@ -76,7 +94,7 @@ const DataExplorer = () => {
     if (panel2Path) {
       const controller = new AbortController();
       const { signal } = controller;
-      fetch(`/api/project/${params.project}/data/${panel2Path}`, { signal })
+      fetch(`/api/project/${params.project}/data/${panel2Path}${toQuery(panel2Query)}`, { signal })
         .then(x => x.json())
         .then(res => setPanel2(res.result))
         .catch(e => {
@@ -84,7 +102,7 @@ const DataExplorer = () => {
         });
       return () => controller.abort();
     }
-  }, [panel2Path, params.project, update_message]);
+  }, [panel2Path, params.project, update_message, panel2Query]);
 
   // panel3 effect
   useEffect(() => {
@@ -92,7 +110,7 @@ const DataExplorer = () => {
     if (panel3Path) {
       const controller = new AbortController();
       const { signal } = controller;
-      fetch(`/api/project/${params.project}/data/${panel3Path}`, { signal })
+      fetch(`/api/project/${params.project}/data/${panel3Path}${toQuery(panel3Query)}`, { signal })
         .then(x => x.json())
         .then(res => setPanel3(res.result))
         .catch(e => {
@@ -100,7 +118,7 @@ const DataExplorer = () => {
         });
       return () => controller.abort();
     }
-  }, [panel3Path, params.project, update_message]);
+  }, [panel3Path, params.project, update_message, panel3Query]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
@@ -145,6 +163,7 @@ const DataExplorer = () => {
               project={params.project}
               path={panel1Path}
               selectedPath={panel2Path}
+              updateMessage={update_message}
               {...panel1}
             />
           )}

@@ -7,6 +7,7 @@ import {
   Chip,
   FormControl,
   FormControlLabel,
+  Grid,
   InputLabel,
   MenuItem,
   Popover,
@@ -21,15 +22,25 @@ import { useEffect, useState } from "react";
 function getConditionValue(conditionValue, conditionValueType) {
   if (conditionValueType === "string") return conditionValue ? conditionValue.toString() : "";
   if (conditionValueType === "number") return Number(conditionValue);
-  return Boolean(conditionValue);
+  return ["true", "1"].includes(conditionValue.toLowerCase());
 }
 
-const QueryPopover = ({ name, open, onClose, anchorEl, onClear, onApply }) => {
+const isConditionRequiresJSONArray = c => ["in", "not-in", "array-contains-any"].includes(c);
+
+const QueryPopover = ({ name, queryValue, open, onClose, anchorEl, onClear, onApply }) => {
   const [field, setField] = useState(""),
     [condition, setCondition] = useState("_"),
     [conditionValueType, setConditionValueType] = useState("string"),
     [conditionValue, setConditionValue] = useState(""),
     [sort, setSort] = useState("");
+
+  useEffect(() => {
+    setField(queryValue?.field ?? "");
+    setCondition(queryValue?.condition ?? "_");
+    setConditionValueType(queryValue?.conditionValueType ?? "string");
+    setConditionValue(queryValue?.conditionValue ?? "");
+    setSort(queryValue?.sort ?? "");
+  }, [queryValue]);
 
   let preview = `.collection("${name}")`;
   if (field && condition !== "_") {
@@ -48,6 +59,30 @@ const QueryPopover = ({ name, open, onClose, anchorEl, onClear, onApply }) => {
       setSort("");
     }
   }, [sortEnabled]);
+
+  const conditionRequiresArray = isConditionRequiresJSONArray(condition);
+
+  let invalidConditionValue = false;
+  if (conditionValueType === "boolean") {
+    if (!["true", "false", "0", "1"].includes(conditionValue.toLowerCase())) {
+      invalidConditionValue = true;
+    }
+  } else if (conditionValueType === "json-array") {
+    try {
+      const parsedValue = JSON.parse(conditionValue);
+      if (
+        !Array.isArray(parsedValue) ||
+        parsedValue.length === 0 ||
+        parsedValue.length > 10 ||
+        parsedValue.some(v => !["string", "number", "boolean"].includes(typeof v))
+      )
+        invalidConditionValue = true;
+    } catch (e) {
+      invalidConditionValue = true;
+    }
+  }
+
+  const invalidChoice = condition === "_" && !sort;
 
   return (
     <Popover
@@ -73,7 +108,7 @@ const QueryPopover = ({ name, open, onClose, anchorEl, onClear, onApply }) => {
             borderBottomStyle: "solid"
           }}
         >
-          <Typography>Query collection - Still in development</Typography>
+          <Typography>Query collection</Typography>
         </Box>
         <CardContent>
           <TextField
@@ -116,7 +151,17 @@ const QueryPopover = ({ name, open, onClose, anchorEl, onClear, onApply }) => {
               fullWidth
               sx={{ "& div": { padding: "8px" } }}
               value={condition}
-              onChange={e => setCondition(e.target.value)}
+              onChange={e => {
+                const newConditionRequiresArray = isConditionRequiresJSONArray(e.target.value);
+                if (newConditionRequiresArray && !conditionRequiresArray) {
+                  setConditionValueType("json-array");
+                  setConditionValue('[""]');
+                } else if (!newConditionRequiresArray && conditionRequiresArray) {
+                  setConditionValueType("string");
+                  setConditionValue("");
+                }
+                setCondition(e.target.value);
+              }}
             >
               <MenuItem value="_">No condition</MenuItem>
               <MenuItem value="==">(==) equal to</MenuItem>
@@ -133,6 +178,73 @@ const QueryPopover = ({ name, open, onClose, anchorEl, onClear, onApply }) => {
               </MenuItem>
             </Select>
           </FormControl>
+          {condition !== "_" && (
+            <Grid container>
+              <Grid item xs={5}>
+                <Select
+                  variant="outlined"
+                  margin="dense"
+                  fullWidth
+                  sx={{ "& div": { padding: "8px" } }}
+                  value={conditionValueType}
+                  onChange={e => {
+                    setConditionValueType(e.target.value);
+                    if (e.target.value === "boolean") {
+                      setConditionValue("true");
+                    }
+                  }}
+                >
+                  {conditionRequiresArray ? (
+                    <MenuItem value="json-array">JSON Array</MenuItem>
+                  ) : (
+                    [
+                      <MenuItem key="string" value="string">
+                        String
+                      </MenuItem>,
+                      <MenuItem key="number" value="number">
+                        Number
+                      </MenuItem>,
+                      <MenuItem key="boolean" value="boolean">
+                        Boolean
+                      </MenuItem>
+                    ]
+                  )}
+                </Select>
+              </Grid>
+              <Grid item xs>
+                {conditionValueType === "boolean" ? (
+                  <Select
+                    variant="outlined"
+                    margin="dense"
+                    fullWidth
+                    sx={{ "& div": { padding: "8px" } }}
+                    value={conditionValue}
+                    onChange={e => {
+                      setConditionValue(e.target.value);
+                    }}
+                  >
+                    <MenuItem value="true"> true </MenuItem>
+                    <MenuItem value="false"> false </MenuItem>
+                  </Select>
+                ) : (
+                  <TextField
+                    variant="outlined"
+                    type={conditionValueType === "number" ? "number" : "search"}
+                    fullWidth
+                    margin="none"
+                    label={
+                      "Value" +
+                      (conditionValueType === "json-array" ? " (Enter up to 10 values)" : "")
+                    }
+                    InputLabelProps={{ shrink: true }}
+                    error={invalidConditionValue}
+                    value={conditionValue}
+                    onChange={e => setConditionValue(e.target.value)}
+                  />
+                )}
+              </Grid>
+            </Grid>
+          )}
           <FormControl component="fieldset">
             <InputLabel
               sx={{
@@ -183,6 +295,7 @@ const QueryPopover = ({ name, open, onClose, anchorEl, onClear, onApply }) => {
               onClick={() =>
                 onApply({ field, condition, conditionValueType, conditionValue, sort })
               }
+              disabled={invalidConditionValue || invalidChoice}
             >
               Apply
             </Button>

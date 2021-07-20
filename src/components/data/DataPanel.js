@@ -41,6 +41,8 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import ApiClient from "./apiClient";
 import DataPanelAddButton from "./DataPanelAddButton";
 import QueryPopover from "../QueryPopover";
+import { useCollectionQuery } from "../CollectionQueryProvider";
+import { protoPrint } from "./protoPrint";
 
 const onlyIconsList = { "& .MuiListItemIcon-root": { minWidth: "32px" } };
 
@@ -59,8 +61,9 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
     notify = useNotification(),
     docRef = useRef(),
     queryToggleRef = useRef();
-  const [queryOpen, setQueryOpen] = useState(false),
-    [queryApplied, setQueryApplied] = useState(null);
+
+  const [queryOpen, setQueryOpen] = useState(false);
+  const [queries, setQuery] = useCollectionQuery();
 
   const handleDeleteItem = async () => {
     const pathParts = path.split("/");
@@ -229,16 +232,23 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         style={style}
       >
         <ListItemText
-          primary={item.id}
+          primary={item.value ? protoPrint(item.value) : item.id}
           primaryTypographyProps={{
             sx: {
               opacity: selectedPath === item.path ? 1 : item.missing ? 0.4 : 0.5,
               fontFamily: '"Roboto Mono", monospace',
               fontStyle: item.missing ? "italic" : undefined,
+              fontWeight: item.value ? "bold" : undefined,
               paddingLeft: 4,
               whiteSpace: "nowrap",
               textOverflow: "ellipsis",
               overflowY: "clip"
+            }
+          }}
+          secondary={item.value ? item.id : undefined}
+          secondaryTypographyProps={{
+            sx: {
+              paddingLeft: 4
             }
           }}
           data-path={item.path}
@@ -309,7 +319,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
               {type === "collection" && (
                 <Tooltip title="Query" placement="top">
                   <IconButton ref={queryToggleRef} size="small" onClick={() => setQueryOpen(true)}>
-                    <Badge color="primary" variant="dot" invisible={!queryApplied}>
+                    <Badge color="primary" variant="dot" invisible={!queries[path]}>
                       <FilterListIcon />
                     </Badge>
                   </IconButton>
@@ -325,15 +335,16 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         </ListItem>
         <QueryPopover
           name={lastPart}
+          queryValue={queries[path]}
           open={queryOpen}
           onClose={() => setQueryOpen(false)}
           anchorEl={queryToggleRef.current}
           onClear={() => {
-            setQueryApplied(null);
+            setQuery(path, null);
             setQueryOpen(false);
           }}
           onApply={obj => {
-            setQueryApplied(obj);
+            setQuery(path, obj);
             setQueryOpen(false);
           }}
         />

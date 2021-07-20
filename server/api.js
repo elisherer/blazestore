@@ -127,8 +127,32 @@ const api = () => {
         fields = snapshot._fieldsProto;
       } else {
         // collection
-        const docsArray = await firestore.collection(urlParts.join("/")).listDocuments();
-        items = docsArray.map(x => ({ id: x.id, path: x.path }));
+
+        // check for query
+        if (req.query.field) {
+          let queryBuilder = firestore.collection(urlParts.join("/"));
+          if (req.query.cond && req.query.cond !== "_") {
+            let cond_val = req.query.cond_val;
+            if (req.query.cond_val_type === "number") cond_val = Number(cond_val);
+            else if (req.query.cond_val_type === "boolean") cond_val = cond_val === "true";
+            else if (req.query.cond_val_type === "json-array") cond_val = JSON.parse(cond_val);
+            queryBuilder = queryBuilder.where(req.query.field, req.query.cond, cond_val);
+          }
+          if (req.query.sort === "asc" || req.query.sort === "desc") {
+            queryBuilder = queryBuilder.orderBy(req.query.field, req.query.sort);
+          }
+          const queryResult = await queryBuilder.get();
+          items = queryResult.docs.map(x => ({
+            id: x.id,
+            path: x.ref.path,
+            field: req.query.field,
+            value: x._fieldsProto[req.query.field]
+          }));
+        } else {
+          // otherwise
+          const docsArray = await firestore.collection(urlParts.join("/")).listDocuments();
+          items = docsArray.map(x => ({ id: x.id, path: x.path }));
+        }
       }
       res.send({
         result: {

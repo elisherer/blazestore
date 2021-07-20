@@ -4,63 +4,8 @@ import { Box, Typography } from "@material-ui/core";
 import { useMemo } from "react";
 import MonacoEditor from "../../monaco/MonacoEditor";
 import UpdateDocumentDialog from "./UpdateDocumentDialog";
-import { Link, useParams } from "react-router-dom";
-
-const tsToDate = (seconds, nanos) => {
-  return seconds * 1000 + Math.round(nanos / 1e6);
-};
-
-/**
- *
- * @param desc
- * @param desc.valueType {string}
- * @param ctx
- * @param ctx.project {string}
- * @returns {string}
- */
-const printValue = (desc, ctx) => {
-  const val = desc[desc.valueType];
-  switch (desc.valueType) {
-    case "stringValue":
-      return <span style={{ whiteSpace: "pre-wrap" }}>&quot;{val}&quot;</span>;
-    case "timestampValue":
-      return `${new Date(tsToDate(Number(val.seconds), val.nanos)).toGMTString()}`;
-    case "booleanValue":
-    case "integerValue":
-    case "doubleValue":
-      return `${val}`;
-    case "referenceValue": {
-      const ref = val.substr(val.indexOf("/documents/") + 10);
-      return (
-        <span>
-          <span>(reference)&nbsp;</span>
-          <Link title="Follow reference" to={`/project/${ctx.project}/data${ref}`}>
-            {ref}
-          </Link>
-        </span>
-      );
-    }
-    case "geoPointValue":
-      return (
-        <a
-          title="See on Google Maps"
-          href={`https://maps.google.com/maps?q=${val.latitude},${val.longitude}&z=17&t=k`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          [{val.latitude}° N, {val.longitude}° E]
-        </a>
-      );
-    case "nullValue":
-      return "null";
-    case "arrayValue":
-      return val.values?.length === 0 ? "[]" : "";
-    case "mapValue":
-      if (Object.keys(val.fields).length === 0) return "{}";
-      return "";
-  }
-  return "N/A";
-};
+import { useParams } from "react-router-dom";
+import { protoPrint, tsToDate } from "./protoPrint";
 
 const MAX_SAFE_INTEGER_STRING = Number.MAX_SAFE_INTEGER.toString(),
   MAX_SAFE_INTEGER_LENGTH = MAX_SAFE_INTEGER_STRING.length;
@@ -138,7 +83,7 @@ const renderTree = (ctx, path, nodes) => {
                     {node + (composite ? "" : ":")}
                   </Typography>
                   <Typography sx={{ fontSize: "0.9rem" }}>
-                    {printValue(nodes[node], ctx)}
+                    {protoPrint(nodes[node], ctx)}
                   </Typography>
                 </Box>
               }
