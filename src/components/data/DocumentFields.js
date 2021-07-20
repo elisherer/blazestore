@@ -1,6 +1,6 @@
 import { TreeItem, TreeView } from "@material-ui/lab";
-import { ArrowDropDown, ArrowRight } from "@material-ui/icons";
-import { Box, Typography } from "@material-ui/core";
+import { ArrowDropDown, ArrowRight, Delete as DeleteIcon } from "@material-ui/icons";
+import { Box, IconButton, Tooltip, Typography } from "@material-ui/core";
 import { useMemo } from "react";
 import MonacoEditor from "../../monaco/MonacoEditor";
 import UpdateDocumentDialog from "./UpdateDocumentDialog";
@@ -69,9 +69,9 @@ const renderTree = (ctx, path, nodes) => {
           return (
             <TreeItem
               key={node}
-              nodeId={path + node}
+              nodeId={path + "/" + node}
               label={
-                <Box sx={{ display: "flex", py: 1 }}>
+                <Box sx={{ display: "flex", py: 1, position: "relative" }}>
                   <Typography
                     sx={{
                       opacity: 0.5,
@@ -85,6 +85,22 @@ const renderTree = (ctx, path, nodes) => {
                   <Typography sx={{ fontSize: "0.9rem" }}>
                     {protoPrint(nodes[node], ctx)}
                   </Typography>
+                  {!path && (
+                    <Tooltip title="Delete field" placement="left">
+                      <IconButton
+                        size="small"
+                        sx={{
+                          position: "absolute",
+                          right: 0,
+                          display: "none",
+                          "*:hover > &": { display: "block" }
+                        }}
+                        onClick={() => ctx.deleteField(node)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </Box>
               }
             >
@@ -101,10 +117,14 @@ const DocumentFields = ({
   fieldsJsonRef,
   view,
   updateDocumentToggle,
-  onUpdateDocumentAsync
+  onUpdateDocumentAsync,
+  deleteField
 }) => {
   const params = useParams();
-  const ctx = useMemo(() => ({ project: params.project }), [params.project]);
+  const ctx = useMemo(() => ({ project: params.project, deleteField }), [
+    params.project,
+    deleteField
+  ]);
   const tree = useMemo(() => {
     const t = renderTree(ctx, "", fields);
     fieldsJsonRef.current = t.json;

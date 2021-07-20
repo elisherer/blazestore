@@ -30,7 +30,7 @@ import { useHistory, useParams } from "react-router-dom";
 import DocumentFields from "./DocumentFields";
 import AddDocumentDialog from "./AddDocumentDialog";
 import { useNotification } from "../NotificationProvider/NotificationProvider";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePrompt } from "../PromptProvider/PromptProvider";
 import AddFieldDialog from "./AddFieldDialog";
 import copyToClipboard from "../../helpers/copyToClipboard";
@@ -99,6 +99,21 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
     menu.handleClose();
   };
 
+  const deleteField = useCallback(
+    async field => {
+      const result = await ApiClient.updateDocumentFieldsAsync(params.project, path, {
+        [field]: "$delete"
+      });
+      if (result.success) {
+        push(`/project/${params.project}/data/${path}`, { update_message: result.message });
+        notify.success(result.message);
+      } else {
+        notify.error(result.error);
+      }
+    },
+    [notify, params.project, path, push]
+  );
+
   const handleDeleteFieldsItem = async () => {
     setPrompt({
       title: "Delete data",
@@ -123,8 +138,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
           }, {})
         );
         if (result.success) {
-          const parentPath = path.split("/").slice(0, -1).join("/");
-          push(`/project/${params.project}/data/${parentPath}`);
+          push(`/project/${params.project}/data/${path}`, { update_message: result.message });
           notify.success(result.message);
           return true; // close dialog
         } else {
@@ -315,14 +329,14 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
             sx={{ whiteSpace: "nowrap", overflow: "hidden" }}
           />
           {type !== "project" && (
-            <ListItemSecondaryAction sx={{ right: 0 }}>
-              <Tooltip title="Copy name" placement="top">
+            <ListItemSecondaryAction sx={{ right: 4 }}>
+              <Tooltip title="Copy name" placement="bottom-end">
                 <IconButton size="small" onClick={handleCopyName}>
                   <ContentCopyIcon fontSize="sm" />
                 </IconButton>
               </Tooltip>
               {type === "collection" && (
-                <Tooltip title="Query" placement="top">
+                <Tooltip title="Query" placement="bottom-end">
                   <IconButton ref={queryToggleRef} size="small" onClick={() => setQueryOpen(true)}>
                     <Badge color="primary" variant="dot" invisible={!queries[path]}>
                       <FilterListIcon />
@@ -330,7 +344,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
                   </IconButton>
                 </Tooltip>
               )}
-              <Tooltip title="Actions" placement="top">
+              <Tooltip title="Actions" placement="bottom-end">
                 <IconButton size="small" onClick={menu.handleOpen}>
                   <MoreVertIcon />
                 </IconButton>
@@ -437,6 +451,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
             view={codeView.open ? "code" : "tree"}
             updateDocumentToggle={updateDocumentToggle}
             onUpdateDocumentAsync={handleUpdateDocumentAsync}
+            deleteField={deleteField}
           />
         </Box>
       )}
