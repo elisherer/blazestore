@@ -1,11 +1,6 @@
 import { useMemo } from "react";
-import {
-  colors,
-  createMuiTheme,
-  CssBaseline,
-  GlobalStyles,
-  ThemeProvider
-} from "@material-ui/core";
+import { colors, CssBaseline, GlobalStyles, ThemeProvider } from "@material-ui/core";
+import { createTheme } from "@material-ui/core/styles";
 import { useColorMode } from "./ColorModeProvider";
 
 const overrides = {
@@ -31,7 +26,7 @@ const MaterialUIProvider = ({
   }
 
   const theme = useMemo(() => {
-    return createMuiTheme({
+    return createTheme({
       palette: {
         mode: colorMode,
         primary: { main: colors.blue.A400 },
