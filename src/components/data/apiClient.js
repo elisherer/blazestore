@@ -20,6 +20,14 @@ const ApiClient = {
     });
   },
 
+  async deletePathsAsync(project, paths) {
+    return apiCallAsync(`/api/project/${project}/data-bulk/delete`, {
+      method: "POST",
+      body: JSON.stringify(paths),
+      headers: { "content-type": "application/json" }
+    });
+  },
+
   async updateDocumentFieldsAsync(project, path, fields) {
     return apiCallAsync(`/api/project/${project}/data/${path}`, {
       method: "PATCH",

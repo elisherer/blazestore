@@ -35,9 +35,7 @@ const MaterialUIProvider = ({
       palette: {
         mode: colorMode,
         primary: { main: colors.blue.A400 },
-        secondary: { main: colors.red[700] },
-        appbar: { main: "#051e34" },
-        selectedItem: { main: "rgba(0,0,0,0.05)" }
+        secondary: { main: colors.red[700] }
       }
     });
   }, [colorMode]);

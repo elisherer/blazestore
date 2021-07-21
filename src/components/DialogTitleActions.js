@@ -1,37 +1,24 @@
-import { withStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
-import { Box, DialogTitle, IconButton, Tooltip, Typography } from "@material-ui/core";
+import { Box, DialogTitle, IconButton, styled, Tooltip, Typography } from "@material-ui/core";
 
-const styles = theme => ({
-  root: {
-    margin: 0,
-    padding: theme.spacing(2),
-    paddingBottom: 0,
-    display: "flex",
-    alignItems: "center"
-  },
-  title: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center"
-  },
-  buttonGroup: {
-    marginLeft: theme.spacing(1),
-    color: theme.palette.grey[500]
-  }
-});
+const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+  margin: 0,
+  padding: theme.spacing(2),
+  paddingBottom: 0,
+  display: "flex",
+  alignItems: "center"
+}));
 
-const DialogTitleWithActions = withStyles(styles)(props => {
-  const { title, titleIcon, children, classes, onClose, ...other } = props;
+const DialogTitleWithActions = ({ title, titleIcon, children, onClose, ...other }) => {
   return (
-    <DialogTitle disableTypography className={classes.root} {...other}>
-      <div className={classes.title}>
+    <StyledDialogTitle disableTypography {...other}>
+      <Box display="flex" flex={1} alignItems="center">
         {titleIcon}
-        <Box sx={{ pl: 1 }} component={Typography} variant="h6">
+        <Box pl={1} component={Typography} variant="h6">
           {title}
         </Box>
-      </div>
-      <div className={classes.buttonGroup}>
+      </Box>
+      <Box ml={1} color="grey.500">
         {children}
         {onClose ? (
           <Tooltip title="Close">
@@ -40,9 +27,9 @@ const DialogTitleWithActions = withStyles(styles)(props => {
             </IconButton>
           </Tooltip>
         ) : null}
-      </div>
-    </DialogTitle>
+      </Box>
+    </StyledDialogTitle>
   );
-});
+};
 
 export default DialogTitleWithActions;

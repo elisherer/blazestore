@@ -29,7 +29,7 @@ const Header = () => {
 
   return (
     <MaterialUIProvider type="dark" nested>
-      <AppBar position="static" color="appbar" sx={{ color: "white" }}>
+      <AppBar position="static" sx={{ color: "white", backgroundColor: "#051e34" }}>
         <Grid container justifyContent="space-between" alignItems="center">
           <Toolbar>
             <BlazestoreIcon size={32} />

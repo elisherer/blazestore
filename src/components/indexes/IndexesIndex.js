@@ -129,7 +129,7 @@ const IndexesIndex = () => {
         <Tab label="Composite" />
         <Tab label="Single field" />
       </Tabs>
-      <Box sx={{ position: "absolute", right: 0 }}>
+      <Box position="absolute" right={0}>
         <TextField
           size="small"
           type="search"

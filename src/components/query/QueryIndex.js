@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useHistory, useParams, NavLink, Link } from "react-router-dom";
 import {
+  Alert,
   Box,
   Button,
   FormControl,
@@ -14,19 +15,13 @@ import {
   TextField
 } from "@material-ui/core";
 import OverlayLoader from "../OverlayLoader";
-import GroupingTable from "../GroupingTable";
+import { DataGrid, GridToolbar } from "@material-ui/data-grid";
+import ApiClient from "../data/apiClient";
+import { usePrompt } from "../PromptProvider/PromptProvider";
+import { useNotification } from "../NotificationProvider/NotificationProvider";
+import { Delete } from "@material-ui/icons";
 
 const queryTerms = ["field", "cond", "value", "limit", "sort"];
-
-const cgColumns = [
-  {
-    id: "path",
-    label: "Path",
-    format: (path, _, __, params) => (
-      <Link to={`/project/${params.project}/data/${path}`}>{path}</Link>
-    )
-  }
-];
 
 const extractFromQuery = query => {
   const sp = new URLSearchParams(query);
@@ -48,6 +43,8 @@ const QueryIndex = () => {
   const location = useLocation();
   const history = useHistory();
   const params = useParams();
+  const [setPrompt] = usePrompt();
+  const notify = useNotification();
   const query = useMemo(() => {
     if (!location.search) return null;
     return extractFromQuery(location.search);
@@ -63,6 +60,47 @@ const QueryIndex = () => {
     sort: "",
     ...query
   });
+  const [selectionModel, setSelectionModel] = useState(null);
+
+  const handleDeleteSelected = async () => {
+    setPrompt({
+      title: `Delete ${selectionModel.length} documents`,
+      message: (
+        <div>
+          <Alert severity="error">
+            This will permanently delete those {selectionModel.length} documents, are you sure?
+          </Alert>
+        </div>
+      ),
+      dangerous: true,
+      name: "Start delete",
+      action: async () => {
+        const result = await ApiClient.deletePathsAsync(params.project, selectionModel);
+        if (result.success) {
+          setResults(results.filter(item => !selectionModel.includes(item.id)));
+          setSelectionModel(null);
+          notify.success(result.message);
+          return true; // close dialog
+        } else {
+          notify.error(result.error);
+        }
+        return false;
+      }
+    });
+  };
+
+  const collectionGroupColumns = useMemo(() => {
+    return [
+      {
+        field: "id",
+        headerName: "Path",
+        flex: 0.6,
+        renderCell: ({ value }) => (
+          <Link to={`/project/${params.project}/data/${value}`}>{value}</Link>
+        )
+      }
+    ];
+  }, [params.project]);
 
   useEffect(() => {
     setCollectionGroups(null);
@@ -95,7 +133,7 @@ const QueryIndex = () => {
       fetch(`/api/project/${params.project}/query/${params.type}/${form.path}?${searchQuery}`)
         .then(x => x.json())
         .then(res => {
-          setResults(res.result.items);
+          setResults(res.result.items.map(x => ({ id: x.path })));
         })
         .catch(e => {
           if (e.name !== "AbortError") throw e;
@@ -248,7 +286,30 @@ const QueryIndex = () => {
           </Box>
         </Grid>
       </Box>
-      {!results ? <OverlayLoader /> : <GroupingTable columns={cgColumns} rows={results} />}
+      {!results ? (
+        <OverlayLoader />
+      ) : (
+        <DataGrid
+          columns={collectionGroupColumns}
+          rows={results}
+          checkboxSelection
+          selectionModel={selectionModel}
+          onSelectionModelChange={sm => setSelectionModel(sm)}
+          components={{
+            Toolbar: () => (
+              <Box display="flex">
+                <GridToolbar />
+                {selectionModel && selectionModel.length > 0 && (
+                  <Button onClick={handleDeleteSelected} startIcon={<Delete />} color="secondary">
+                    Delete selected
+                  </Button>
+                )}
+              </Box>
+            )
+          }}
+        />
+        //<GroupingTable columns={collectionGroupColumns} rows={results} />
+      )}
     </Box>
   );
 };

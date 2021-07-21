@@ -356,6 +356,55 @@ const api = () => {
     }
   });
 
+  router.post("/project/:project/data-bulk/delete", async (req, res) => {
+    try {
+      const firestore = getApp(req).firestore();
+
+      // validate
+      if (!Array.isArray(req.body)) {
+        res.status(400);
+        res.send({ error: "Body must be an array of paths" });
+      }
+      const total = req.body.length;
+      if (total > 500) {
+        res.status(400);
+        res.send({ error: `Array must not contain more than 500 paths (${total})` });
+      }
+      if (
+        req.body.some(path => {
+          const urlParts = path.split("/");
+          const isDocument = urlParts.length % 2 === 0;
+          return !isDocument;
+        })
+      ) {
+        res.status(400);
+        res.send({ error: "Not all paths are document paths" });
+      }
+      const bulkWriter = firestore.bulkWriter();
+      let errorCount = 0;
+      bulkWriter.onWriteError(e => {
+        console.error(`Error: (${errorCount}/${total}) ` + e.message);
+        errorCount++;
+      });
+      for (const path of req.body) {
+        bulkWriter.delete(firestore.doc(path));
+      }
+      await bulkWriter.flush();
+      if (errorCount === total) {
+        res.status(500);
+        res.send({ error: "All delete operations failed" });
+      } else {
+        res.send({
+          result: `Deleting ${total} documents ended with ${errorCount} errors`
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500);
+      res.send({ error: err.message });
+    }
+  });
+
   return router;
 };
 
