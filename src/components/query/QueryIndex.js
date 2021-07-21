@@ -293,7 +293,7 @@ const QueryIndex = () => {
           columns={collectionGroupColumns}
           rows={results}
           checkboxSelection
-          selectionModel={selectionModel}
+          //selectionModel={selectionModel}
           onSelectionModelChange={sm => setSelectionModel(sm)}
           components={{
             Toolbar: () => (

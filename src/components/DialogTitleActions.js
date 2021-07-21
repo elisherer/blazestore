@@ -11,7 +11,7 @@ const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
 
 const DialogTitleWithActions = ({ title, titleIcon, children, onClose, ...other }) => {
   return (
-    <StyledDialogTitle disableTypography {...other}>
+    <StyledDialogTitle {...other}>
       <Box display="flex" flex={1} alignItems="center">
         {titleIcon}
         <Box pl={1} component={Typography} variant="h6">
