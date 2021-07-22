@@ -249,7 +249,12 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
           primary={item.value ? protoPrint(item.value) : item.id}
           primaryTypographyProps={{
             sx: {
-              opacity: selectedPath === item.path ? 1 : item.missing ? 0.4 : 0.5,
+              opacity:
+                typeof item.value !== "undefined" || selectedPath === item.path
+                  ? 1
+                  : item.missing
+                  ? 0.4
+                  : 0.5,
               fontFamily: '"Roboto Mono", monospace',
               fontStyle: item.missing ? "italic" : undefined,
               fontWeight: item.value ? "bold" : undefined,
@@ -260,7 +265,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
               lineHeight: 1
             }
           }}
-          secondary={item.value ? item.id : undefined}
+          secondary={typeof item.value !== "undefined" ? item.id : undefined}
           secondaryTypographyProps={{
             sx: {
               paddingLeft: 4,

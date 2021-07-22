@@ -55,7 +55,7 @@ const renderTree = (ctx, path, nodes) => {
           const composite = nodes[node].mapValue || nodes[node].arrayValue;
           let child;
           if (composite) {
-            result.ids.push(path + node);
+            result.ids.push(path + "/" + node);
             child = nodes[node].mapValue
               ? renderTree(ctx, path + "/" + node, nodes[node].mapValue.fields)
               : nodes[node].arrayValue
