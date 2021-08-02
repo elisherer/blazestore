@@ -9,7 +9,7 @@ class ErrorBoundary extends PureComponent {
   static getDerivedStateFromError() {}
 
   componentDidCatch(error, errorInfo) {
-    this.props.onError(error.message, errorInfo?.componentStack ?? "");
+    this.props.onError("Unexpected error caught", error.message);
     console.error(error, errorInfo?.componentStack ?? "");
   }
 
