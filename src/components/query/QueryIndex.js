@@ -1,19 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useHistory, useParams, NavLink, Link } from "react-router-dom";
-import {
-  Alert,
-  Box,
-  Button,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Tab,
-  Tabs,
-  TextField
-} from "@material-ui/core";
+import { Alert, Box, Button, Grid, Paper, Tab, Tabs, TextField } from "@material-ui/core";
 import OverlayLoader from "../OverlayLoader";
 import { DataGrid, GridToolbar } from "@material-ui/data-grid";
 import ApiClient from "../data/apiClient";
@@ -21,7 +8,7 @@ import { usePrompt } from "../PromptProvider/PromptProvider";
 import { useNotification } from "../NotificationProvider/NotificationProvider";
 import { Delete } from "@material-ui/icons";
 
-const queryTerms = ["field", "cond", "value", "limit", "sort"];
+const queryTerms = ["limit", "where_sort"];
 
 const extractFromQuery = query => {
   const sp = new URLSearchParams(query);
@@ -53,11 +40,8 @@ const QueryIndex = () => {
   const [collectionGroups, setCollectionGroups] = useState(null);
   const [form, setForm] = useState({
     path: params.path,
-    field: "",
-    cond: "",
-    value: "",
+    where_sort: "",
     limit: 10,
-    sort: "",
     ...query
   });
   const [selectionModel, setSelectionModel] = useState(null);
@@ -108,19 +92,23 @@ const QueryIndex = () => {
     const { signal } = controller;
     fetch(`/api/project/${params.project}/indexes`, { signal })
       .then(x => x.json())
-      .then(res =>
-        setCollectionGroups(
-          [
-            ...new Set(
-              res.result?.items[0]
-                .filter(ix => ix.queryScope === "COLLECTION_GROUP")
-                .map(ix => ix.name.split("/")[5])
-            )
-          ].sort()
-        )
-      )
+      .then(res => {
+        if (res.error) {
+          notify.error(res.error);
+        } else {
+          setCollectionGroups(
+            [
+              ...new Set(
+                res.result?.items[0]
+                  .filter(ix => ix.queryScope === "COLLECTION_GROUP")
+                  .map(ix => ix.name.split("/")[5])
+              )
+            ].sort()
+          );
+        }
+      })
       .catch(e => {
-        if (e.name !== "AbortError") throw e;
+        if (e.name !== "AbortError") notify.error(e);
       });
     return () => controller.abort();
   }, [params.project]);
@@ -133,10 +121,16 @@ const QueryIndex = () => {
       fetch(`/api/project/${params.project}/query/${params.type}/${form.path}?${searchQuery}`)
         .then(x => x.json())
         .then(res => {
-          setResults(res.result.items.map(x => ({ id: x.path })));
+          if (res.error) {
+            notify.error(res.error);
+            setResults([]);
+          } else {
+            setResults(res.result.items.map(x => ({ id: x.path })));
+          }
         })
         .catch(e => {
-          if (e.name !== "AbortError") throw e;
+          if (e.name !== "AbortError") notify.error(e);
+          setResults([]);
         });
       history.replace(
         `/project/${params.project}/query/${params.type}/${form.path}?${searchQuery}`
@@ -214,52 +208,6 @@ const QueryIndex = () => {
               />
             </Grid>
           )}
-          {params.type === "collection" && (
-            <Grid item>
-              <TextField
-                variant="outlined"
-                label="Field"
-                margin="dense"
-                InputLabelProps={{
-                  shrink: true
-                }}
-                value={form.field}
-                onChange={e => setForm({ ...form, field: e.target.value })}
-              />
-            </Grid>
-          )}
-          {params.type === "collection" && (
-            <Grid item xs={2}>
-              <FormControl fullWidth>
-                <InputLabel shrink id="condition-label">
-                  Condition
-                </InputLabel>
-                <Select
-                  variant="outlined"
-                  label="Condition"
-                  labelId="condition-label"
-                  margin="dense"
-                  fullWidth
-                  value={form.cond}
-                  onChange={e => setForm({ ...form, cond: e.target.value })}
-                >
-                  <MenuItem value="">No condition</MenuItem>
-                  <MenuItem value="==">(==) equal to</MenuItem>
-                  <MenuItem value="!=">(!=) not equal to</MenuItem>
-                  <MenuItem value=">">(&gt;) greater than</MenuItem>
-                  <MenuItem value=">=">(&gt;=) greater than or equal to</MenuItem>
-                  <MenuItem value="<">(&lt;) less than</MenuItem>
-                  <MenuItem value="<=">(&lt;=) less than or equal to</MenuItem>
-                  <MenuItem value="in">(in) equal to any of the following</MenuItem>
-                  <MenuItem value="not-in">(not-in) not equal to any of the following</MenuItem>
-                  <MenuItem value="array-contains">(array-contains) an array containing</MenuItem>
-                  <MenuItem value="array-contains-any">
-                    (array-contains-any) an array containing any
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-          )}
           <Grid item>
             <TextField
               variant="outlined"
@@ -275,12 +223,22 @@ const QueryIndex = () => {
               onChange={e => setForm({ ...form, limit: e.target.value })}
             />
           </Grid>
+          <Grid item xs={4}>
+            <TextField
+              variant="outlined"
+              label="Where / Sort (in JSON format, array of length 3 OR 2)"
+              placeholder={'[ "key", "==", 123 ] / [ "key", "asc" ]'}
+              margin="dense"
+              fullWidth
+              InputLabelProps={{
+                shrink: true
+              }}
+              value={form.where_sort}
+              onChange={e => setForm({ ...form, where_sort: e.target.value })}
+            />
+          </Grid>
           <Box sx={{ p: 3, display: "flex", flexDirection: "column-reverse", marginLeft: "auto" }}>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={!results || params.type === "collection"}
-            >
+            <Button type="submit" variant="contained" disabled={!results}>
               Search
             </Button>
           </Box>

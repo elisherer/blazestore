@@ -334,15 +334,34 @@ const api = () => {
   router.get("/project/:project/query/:type/:path", async (req, res) => {
     try {
       const firestore = getApp(req).firestore();
-      let items = [];
 
-      if (req.params.type === "collectionGroup") {
-        items = await firestore
-          .collectionGroup(req.params.path)
-          .limit(Math.min(parseInt(req.query.limit || "50"), 50))
-          .get();
-        items = items.docs.map(doc => ({ path: doc.ref.path }));
+      let ref;
+      if (req.params.type === "collection") {
+        ref = firestore.collection(req.params.path);
       }
+      if (req.params.type === "collectionGroup") {
+        ref = firestore.collectionGroup(req.params.path);
+      }
+      if (req.query.where_sort) {
+        const clause = JSON.parse(req.query.where_sort);
+        if (
+          !Array.isArray(clause) ||
+          clause.length < 2 ||
+          clause.length > 3 ||
+          typeof clause[0] !== "string" ||
+          typeof clause[1] !== "string"
+        ) {
+          throw new Error("where_sort must be an array of 2/3 (first 2 values of string)");
+        }
+        if (clause.length === 3) {
+          ref = ref.where(clause[0], clause[1], clause[2]);
+        } else {
+          ref = ref.orderBy(clause[0], clause[1]);
+        }
+      }
+
+      let items = await ref.limit(Math.min(parseInt(req.query.limit || "50"), 50)).get();
+      items = items.docs.map(doc => ({ path: doc.ref.path }));
       res.send({
         result: {
           type: "query",

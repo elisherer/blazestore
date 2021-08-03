@@ -1,16 +1,41 @@
 import { useEffect, useState } from "react";
-import { Box, IconButton, Tab, Tabs, TextField, Typography } from "@material-ui/core";
+import {
+  Box,
+  Chip,
+  CircularProgress,
+  IconButton,
+  Tab,
+  Tabs,
+  TextField,
+  Typography
+} from "@material-ui/core";
 import { useParams } from "react-router-dom";
 import GroupingTable from "../GroupingTable";
-import { Search } from "@material-ui/icons";
+import { Check, Search } from "@material-ui/icons";
 
 const capitalize = word => word[0].toUpperCase() + word.substr(1);
-const getDescriber = field => {
+const getDescriber = (field, state) => {
   switch (field.valueMode) {
     case "order":
-      return capitalize(field.order.toLowerCase());
+      return (
+        <Chip
+          key={field.fieldPath}
+          variant="outlined"
+          icon={state === "CREATING" ? <CircularProgress /> : <Check color="green.500" />}
+          size="small"
+          label={capitalize(field.order.toLowerCase())}
+        />
+      );
     case "arrayConfig":
-      return "Arrays";
+      return (
+        <Chip
+          key={field.fieldPath}
+          variant="outlined"
+          icon={state === "CREATING" ? <CircularProgress /> : <Check color="green.500" />}
+          size="small"
+          label="Arrays"
+        />
+      );
   }
 };
 const fieldsColumns = [
@@ -20,10 +45,11 @@ const fieldsColumns = [
     id: "indexConfig",
     label: "Collection scope",
     format: indexConfig =>
-      indexConfig.indexes
-        .filter(ix => ix.queryScope === "COLLECTION")
-        .map(ix => getDescriber(ix.fields[0]))
-        .join(",")
+      indexConfig.usesAncestorConfig === false
+        ? "No changes from automatic index settings"
+        : indexConfig.indexes
+            .filter(ix => ix.queryScope === "COLLECTION")
+            .map(ix => getDescriber(ix.fields[0], ix.state))
   },
   {
     id: "indexConfig",
@@ -31,8 +57,7 @@ const fieldsColumns = [
     format: indexConfig =>
       indexConfig.indexes
         .filter(ix => ix.queryScope === "COLLECTION_GROUP")
-        .map(ix => getDescriber(ix.fields[0]))
-        .join(",")
+        .map(ix => getDescriber(ix.fields[0], ix.state))
   }
 ];
 

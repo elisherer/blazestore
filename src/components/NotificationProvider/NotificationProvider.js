@@ -67,6 +67,9 @@ export const NotificationProvider = ({ children }) => {
       >
         {toast ? (
           <Alert
+            sx={{
+              wordBreak: "break-all"
+            }}
             elevation={6}
             variant="filled"
             onClose={toast.isClosable ? closeToast : undefined}
