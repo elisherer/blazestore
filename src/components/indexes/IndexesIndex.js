@@ -85,7 +85,12 @@ const indexesColumns = [
   {
     id: "state",
     label: "Status",
-    format: state => (state === "READY" ? "Enabled" : state.toLowerCase())
+    format: state => (
+      <>
+        {state === "CREATING" && <CircularProgress size={16} />}{" "}
+        {state === "READY" ? "Enabled" : state === "CREATING" ? "Building..." : state.toLowerCase()}
+      </>
+    )
   },
   {
     id: "query",
