@@ -111,7 +111,7 @@ const QueryIndex = () => {
         if (e.name !== "AbortError") notify.error(e);
       });
     return () => controller.abort();
-  }, [params.project]);
+  }, [params.project, notify]);
 
   const handleSearch = useCallback(
     e => {
@@ -137,7 +137,7 @@ const QueryIndex = () => {
       );
       return false;
     },
-    [form, history, params.project, params.type]
+    [form, history, params.project, params.type, notify]
   );
 
   // search on component mount from query if exists

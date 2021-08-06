@@ -6,7 +6,15 @@ const replacePath = (input, pathParts) =>
     return p1 ? pathParts[Number(p1)] : pathParts.join("/");
   });
 
-const mapper = (pathParts, firestore, obj) => {
+/**
+ *
+ * @param pathParts
+ * @param firestore
+ * @param obj
+ * @param doc {FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>}
+ * @return {FirebaseFirestore.Timestamp|string|FirebaseFirestore.FieldValue|*}
+ */
+const mapper = (pathParts, firestore, obj, doc) => {
   if (Array.isArray(obj)) {
     if (obj[0] === "$union") {
       const [, ...args] = obj;
@@ -17,7 +25,7 @@ const mapper = (pathParts, firestore, obj) => {
     } else if (obj[0] === "$geo") {
       return new GeoPoint(Number(obj[1]), Number(obj[2]));
     }
-    return obj.map(o => mapper(pathParts, firestore, o));
+    return obj.map(o => mapper(pathParts, firestore, o, doc));
   }
   if (typeof obj === "string" || obj instanceof String) {
     if (obj === "$id") return pathParts[pathParts.length - 1];
@@ -27,6 +35,8 @@ const mapper = (pathParts, firestore, obj) => {
     else if (obj.startsWith("$ref:"))
       return firestore.doc(replacePath(obj.substring(5), pathParts));
     else if (obj === "$serverTime()") return FieldValue.serverTimestamp();
+    else if (doc && obj === "$createTime") return doc.createTime;
+    else if (doc && obj === "$updateTime") return doc.updateTime;
     else if (obj.startsWith("$inc:")) return FieldValue.increment(Number(obj.substring(5)));
     else if (obj.startsWith("$time:")) {
       const dateVal = obj.substring(6);
@@ -39,7 +49,7 @@ const mapper = (pathParts, firestore, obj) => {
     // might be null
     if (obj) {
       Object.keys(obj).forEach(k => {
-        obj[k] = mapper(pathParts, firestore, obj[k]);
+        obj[k] = mapper(pathParts, firestore, obj[k], doc);
       });
     }
     return obj;

@@ -236,7 +236,10 @@ const api = () => {
       const path = urlParts.join("/");
       const isDocument = urlParts.length % 2 === 0;
       if (isDocument) {
-        const writeResult = await firestore.doc(path).update(mapper(urlParts, firestore, req.body));
+        const doc = await firestore.doc(path).get();
+        const writeResult = await firestore
+          .doc(path)
+          .update(mapper(urlParts, firestore, req.body, doc));
         res.send({
           result: `Document ${path} successfully updated. (At ${writeResult.writeTime.toDate()})`
         });

@@ -19,6 +19,8 @@ export default monaco => {
     ["ref:", 1],
     ["time:", 2],
     ["serverTime()", 2],
+    ["createTime", 2],
+    ["updateTime", 2],
     ["inc:", 3],
     ["geo", 4],
     ["union", 5],
