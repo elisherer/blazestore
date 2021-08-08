@@ -18,7 +18,8 @@ export const validateName = id => {
 };
 
 export const validateDocPath = path => {
-  if (path[0] === "/") return "Path must not start with '/'";
+  if (path[0] === "/" || path[path.length - 1] === "/")
+    return "Path must not start or end with '/'";
   if (!/^[^?]*$/.test(path)) return "Path must not contain ?";
   const partsLength = path.split("/").length;
   if (partsLength % 2 > 0) return "Path must be of a document (multiple of 2)";
@@ -27,7 +28,8 @@ export const validateDocPath = path => {
 };
 
 export const validateCollectionPath = path => {
-  if (path[0] === "/") return "Path must not start with '/'";
+  if (path[0] === "/" || path[path.length - 1] === "/")
+    return "Path must not start or end with '/'";
   if (!/^[^?]*$/.test(path)) return "Path must not contain ?";
   const partsLength = path.split("/").length;
   if (partsLength % 2 === 0) return "Path must be of a collection (not a multiple of 2)";
