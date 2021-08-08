@@ -18,9 +18,19 @@ export const validateName = id => {
 };
 
 export const validateDocPath = path => {
+  if (path[0] === "/") return "Path must not start with '/'";
   if (!/^[^?]*$/.test(path)) return "Path must not contain ?";
   const partsLength = path.split("/").length;
   if (partsLength % 2 > 0) return "Path must be of a document (multiple of 2)";
+  if (partsLength > 100) return "Over the maximum depth of subcollections";
+  return false;
+};
+
+export const validateCollectionPath = path => {
+  if (path[0] === "/") return "Path must not start with '/'";
+  if (!/^[^?]*$/.test(path)) return "Path must not contain ?";
+  const partsLength = path.split("/").length;
+  if (partsLength % 2 === 0) return "Path must be of a collection (not a multiple of 2)";
   if (partsLength > 100) return "Over the maximum depth of subcollections";
   return false;
 };

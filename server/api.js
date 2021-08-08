@@ -22,6 +22,55 @@ if (config.auth.service_account) {
   fsac.initialize().catch(e => console.error(e));
 }
 
+async function copyDocumentRecursive(srcCollectionName, destCollectionName) {
+  const fs = admin.firestore();
+  const documents = await fs.collection(srcCollectionName).get();
+  let writeBatch = fs.batch();
+  const destCollection = fs.collection(destCollectionName);
+  let i = 0;
+  for (const doc of documents.docs) {
+    writeBatch.set(destCollection.doc(doc.id), doc.data());
+    i++;
+    if (i > 490) {
+      // write batch only allows maximum 500 writes per batch
+      i = 0;
+      //console.log('Intermediate committing of batch operation');
+      await writeBatch.commit();
+      writeBatch = fs.batch();
+    }
+  }
+  if (i > 0) {
+    //console.log('Firebase batch operation completed. Doing final committing of batch operation.');
+    await writeBatch.commit();
+  }
+  //console.log('Firebase batch operation completed.');
+}
+
+/**
+ *
+ * @param root {FirebaseFirestore.CollectionReference|FirebaseFirestore.DocumentReference}
+ * @return {Promise<FirebaseFirestore.DocumentReference[]>}
+ */
+const listDocumentsRecursive = async root => {
+  /** @type FirebaseFirestore.DocumentReference[] */
+  const result = [];
+  if (root.listDocuments) {
+    // it is a collection
+    const docs = await root.listDocuments();
+    for (const doc of docs) {
+      result.push(...(await listDocumentsRecursive(doc)));
+    }
+    return result;
+  }
+  // assume document
+  result.push(root);
+  const colls = await root.listCollections();
+  for (const coll of colls) {
+    result.push(...(await listDocumentsRecursive(coll)));
+  }
+  return result;
+};
+
 /**
  *
  * @param req
@@ -197,9 +246,28 @@ const api = () => {
       const firestore = getApp(req).firestore();
 
       const urlParts = req.path.split("/").slice(4); // skip the first 4
+      if (
+        req.query.recursive &&
+        req.query.recursive !== "true" &&
+        req.query.recursive !== "false"
+      ) {
+        res.status(400);
+        res.send({ error: "'recursive' field value (if specified) must be 'true' or 'false'" });
+        return;
+      }
+      const recursive = req.query.recursive === "true";
       const path = urlParts.join("/");
       const isDocument = urlParts.length % 2 === 0;
-      if (isDocument) {
+      if (isDocument && recursive) {
+        await firebase_tools.firestore.delete(path, {
+          project: req.params.project,
+          recursive,
+          yes: true
+        });
+        res.send({
+          result: `Document ${path} (and all nested data) successfully deleted. (At ${Date.now()})`
+        });
+      } else if (isDocument) {
         const writeResult = await firestore.doc(path).delete();
         res.send({
           result: `Document ${path} successfully deleted. (At ${writeResult.writeTime.toDate()})`
@@ -214,11 +282,11 @@ const api = () => {
         }
         await firebase_tools.firestore.delete(path, {
           project: req.params.project,
-          recursive: true,
+          recursive,
           yes: true
         });
         res.send({
-          result: `Collection ${path} successfully deleted. (At ${Date.now()})`
+          result: `Collection ${path} (and all nested data) successfully deleted. (At ${Date.now()})`
         });
       }
     } catch (err) {
@@ -391,6 +459,7 @@ const api = () => {
       if (total > 500) {
         res.status(400);
         res.send({ error: `Array must not contain more than 500 paths (${total})` });
+        return;
       }
       if (
         req.body.some(path => {
@@ -401,6 +470,7 @@ const api = () => {
       ) {
         res.status(400);
         res.send({ error: "Not all paths are document paths" });
+        return;
       }
       const bulkWriter = firestore.bulkWriter();
       let errorCount = 0;
@@ -420,6 +490,91 @@ const api = () => {
           result: `Deleting ${total} documents ended with ${errorCount} errors`
         });
       }
+    } catch (err) {
+      console.error(err);
+      res.status(500);
+      res.send({ error: err.message });
+    }
+  });
+
+  router.get("/project/:project/data-docs-list/*", async (req, res) => {
+    try {
+      const firestore = getApp(req).firestore();
+
+      const urlParts = req.path.split("/").slice(4); // skip the first 4
+      const isDocument = urlParts.length % 2 === 0;
+      const path = urlParts.join("/");
+
+      const docs = await listDocumentsRecursive(
+        isDocument ? firestore.doc(path) : firestore.collection(path)
+      );
+
+      res.send({
+        result: {
+          type: "docs_flat_list",
+          docs: docs.map(ref => ref.path)
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500);
+      res.send({ error: err.message });
+    }
+  });
+
+  router.post("/project/:project/data-copy/*", async (req, res) => {
+    try {
+      const firestore = getApp(req).firestore();
+
+      const urlParts = req.path.split("/").slice(4); // skip the first 4
+      const isDocument = urlParts.length % 2 === 0;
+      const path = urlParts.join("/");
+
+      const docs = await listDocumentsRecursive(
+        isDocument ? firestore.doc(path) : firestore.collection(path)
+      );
+      // sort ascending - roots -> branches
+      docs.sort((a, b) => a.path.length - b.path.length);
+
+      let batch = firestore.batch(),
+        opsCount = 0,
+        docsCopied = [];
+      let targetPath = req.body.to;
+      if (!targetPath) {
+        res.status(400);
+        res.send({ error: "'to' field is missing in body" });
+        return;
+      }
+      if (targetPath.startsWith("/")) targetPath = targetPath.substr(1); // remove pre slash
+      for (const doc of docs) {
+        const sourceDoc = await doc.get();
+        if (sourceDoc.exists) {
+          const targetDocPath = doc.path.replace(path, targetPath);
+          const targetDocRef = firestore.doc(targetDocPath);
+          batch.set(targetDocRef, sourceDoc.data());
+          docsCopied.push(targetDocPath);
+          opsCount++;
+        }
+        if (opsCount === 500) {
+          await batch.commit();
+          batch = firestore.batch();
+          opsCount = 0;
+        }
+      }
+      // run last batch
+      if (opsCount > 0) {
+        await batch.commit();
+      }
+
+      res.send({
+        result: `${path} (and all nested data) was successfully copied to ${targetPath}. (Total of ${
+          docsCopied.length
+        } documents at ${Date.now()})`,
+        details: {
+          docsCopied,
+          total: docsCopied.length
+        }
+      });
     } catch (err) {
       console.error(err);
       res.status(500);

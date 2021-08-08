@@ -13,8 +13,11 @@ const apiCallAsync = async (url, init) => {
 };
 
 const ApiClient = {
-  async deletePathAsync(project, path, confirmation) {
-    const search = confirmation ? "?confirmation=" + encodeURIComponent(confirmation) : "";
+  async deletePathAsync(project, path, confirmation, recursive) {
+    const params = new URLSearchParams();
+    if (confirmation) params.set("confirmation", confirmation);
+    if (recursive) params.set("recursive", recursive.toString());
+    const search = confirmation || recursive ? "?" + params.toString() : "";
     return apiCallAsync(`/api/project/${project}/data/${path}${search}`, {
       method: "DELETE"
     });
@@ -40,6 +43,16 @@ const ApiClient = {
     return apiCallAsync(`/api/project/${project}/data/${path}`, {
       method: "PUT",
       body: JSON.stringify(fields),
+      headers: { "content-type": "application/json" }
+    });
+  },
+
+  async copyPathAsync(project, from, to) {
+    return apiCallAsync(`/api/project/${project}/data-copy/${from}`, {
+      method: "POST",
+      body: JSON.stringify({
+        to
+      }),
       headers: { "content-type": "application/json" }
     });
   }

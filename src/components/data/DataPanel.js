@@ -35,7 +35,7 @@ import { usePrompt } from "../PromptProvider/PromptProvider";
 import AddFieldDialog from "./AddFieldDialog";
 import copyToClipboard from "../../helpers/copyToClipboard";
 import FirestoreIcon from "../FirestoreIcon";
-import RenameMoveCopyDocumentDialog from "./RenameMoveCopyDocumentDialog";
+import RenameMoveCopyDialog from "./RenameMoveCopyDialog";
 import { FixedSizeList } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import ApiClient from "./apiClient";
@@ -56,7 +56,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
     addDocumentToggle = useToggle(),
     addFieldToggle = useToggle(),
     updateDocumentToggle = useToggle(),
-    renameMoveCopyDocumentToggle = useToggle(),
+    renameMoveCopyToggle = useToggle(),
     codeView = useToggle(),
     notify = useNotification(),
     docRef = useRef(),
@@ -84,7 +84,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
       inputText: isDoc ? undefined : "Confirm you want to delete this collection by typing its ID:",
       inputHint: pathParts[pathParts.length - 1],
       action: async (actionTaken, input) => {
-        const result = await ApiClient.deletePathAsync(params.project, path, input);
+        const result = await ApiClient.deletePathAsync(params.project, path, input, true);
         if (result.success) {
           const parentPath = path.split("/").slice(0, -1).join("/");
           push(`/project/${params.project}/data/${parentPath}`);
@@ -194,11 +194,12 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
   };
 
   const handleOpenCopyMoveDocument = () => {
-    renameMoveCopyDocumentToggle.handleOpen();
+    renameMoveCopyToggle.handleOpen();
     menu.handleClose();
   };
-  const handleRenameMoveCopyDocumentAsync = async (from, to) => {
-    let result = await ApiClient.createPathAsync(params.project, to.path, docRef.current);
+  const handleRenameMoveCopyAsync = async (from, to) => {
+    let result = await ApiClient.copyPathAsync(params.project, path, to.path);
+    //await ApiClient.createPathAsync(params.project, to.path, docRef.current);
     if (!result.success) {
       notify.error(result.error);
       return false; // don't close window
@@ -207,7 +208,12 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
       push(`/project/${params.project}/data/${to.path}`, { update_message: result.message });
       notify.success(result.message);
     } else {
-      result = await ApiClient.deletePathAsync(params.project, from);
+      result = await ApiClient.deletePathAsync(
+        params.project,
+        from,
+        from.split("/").pop(),
+        to.recursive
+      );
       if (!result.success) {
         notify.error(result.error);
         return false; // don't close window
@@ -221,12 +227,12 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
           from.substr(fromLastIndexOfSlash) !== to.path.substr(toLastIndexOfSlash)
         ) {
           notify.success(
-            `Document renamed successfully from ${from.substr(
+            `Path renamed successfully from ${from.substr(
               fromLastIndexOfSlash + 1
             )} to ${to.path.substr(toLastIndexOfSlash + 1)}`
           );
         } else {
-          notify.success(`Document moved successfully from ${from} to ${to.path}`);
+          notify.success(`Path moved successfully from ${from} to ${to.path}`);
         }
       }
     }
@@ -311,12 +317,12 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
         onClose={addFieldToggle.handleClose}
         onSaveAsync={handleUpdateDocumentAsync}
       />
-      <RenameMoveCopyDocumentDialog
-        key={"cmd:" + path + renameMoveCopyDocumentToggle.open}
+      <RenameMoveCopyDialog
+        key={"cmd:" + path + renameMoveCopyToggle.open}
         path={path}
-        open={renameMoveCopyDocumentToggle.open}
-        onClose={renameMoveCopyDocumentToggle.handleClose}
-        onSaveAsync={handleRenameMoveCopyDocumentAsync}
+        open={renameMoveCopyToggle.open}
+        onClose={renameMoveCopyToggle.handleClose}
+        onSaveAsync={handleRenameMoveCopyAsync}
       />
       <List dense disablePadding sx={onlyIconsList}>
         <ListItem button divider onClick={() => push(`/project/${params.project}/data/${path}`)}>
@@ -373,14 +379,12 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
           }}
         />
         <Menu {...menu.Props}>
+          <MenuItem onClick={handleOpenCopyMoveDocument} divider>
+            <ListItemText primary="Rename / Move / Copy" />
+          </MenuItem>
           {type === "collection" && (
             <MenuItem onClick={handleDeleteItem}>
               <ListItemText primary="Delete collection" />
-            </MenuItem>
-          )}
-          {type === "document" && (
-            <MenuItem onClick={handleOpenCopyMoveDocument} divider>
-              <ListItemText primary="Rename / Move / Copy document" />
             </MenuItem>
           )}
           {type === "document" && (

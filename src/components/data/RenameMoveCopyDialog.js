@@ -10,9 +10,10 @@ import {
   TextField
 } from "@material-ui/core";
 import DialogTitleWithActions from "../DialogTitleActions";
-import { validateDocPath } from "./utils";
+import { validateCollectionPath, validateDocPath } from "./utils";
+import { LoadingButton } from "@material-ui/lab";
 
-const RenameMoveCopyDocumentDialog = ({
+const RenameMoveCopyDialog = ({
   open,
   path,
   onClose,
@@ -23,13 +24,18 @@ const RenameMoveCopyDocumentDialog = ({
   onClose: Function,
   onSaveAsync?: Function
 }) => {
+  const urlParts = path && path.split("/");
+  const isDocument = urlParts && urlParts.length % 2 === 0;
+  const [saving, setSaving] = useState(false);
+
   const [form, setForm] = useState(() => ({
     path: path || "",
     move: true,
-    recursive: false
+    recursive: true
   }));
 
-  let invalidPath = validateDocPath(form.path);
+  let invalidPath = isDocument ? validateDocPath(form.path) : validateCollectionPath(form.path);
+  const targetSameAsSource = form.path === path;
 
   return (
     <Dialog
@@ -42,10 +48,10 @@ const RenameMoveCopyDocumentDialog = ({
       <DialogTitleWithActions
         id="form-dialog-title"
         onClose={onClose}
-        title={`${form.move ? "Rename / Move" : "Copy"} document`}
+        title={`${form.move ? "Rename / Move" : "Copy"} ${isDocument ? "document" : "collection"}`}
       />
       <DialogContent>
-        <FormGroup>
+        <FormGroup sx={{ mt: 1 }}>
           <TextField
             label="From"
             fullWidth
@@ -83,33 +89,36 @@ const RenameMoveCopyDocumentDialog = ({
             control={
               <Checkbox
                 color="primary"
-                checked={form.recursive}
-                disabled
+                checked={!isDocument || form.recursive}
+                disabled={!isDocument}
                 onChange={e => setForm({ ...form, recursive: e.target.checked })}
               />
             }
-            label="Include all nested data (recursive) (not implemented)"
+            label="Include all nested data (recursive)"
           />
         </FormGroup>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button
+        <LoadingButton
           disableElevation
           variant="contained"
           onClick={() => {
+            setSaving(true);
             onSaveAsync(/* from */ path, /* to */ form).then(val => {
+              setSaving(false);
               if (val === false) return; // default prevented
               onClose();
             });
           }}
-          disabled={Boolean(invalidPath)}
+          loading={saving}
+          disabled={Boolean(invalidPath) || targetSameAsSource}
         >
           Save
-        </Button>
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );
 };
 
-export default RenameMoveCopyDocumentDialog;
+export default RenameMoveCopyDialog;

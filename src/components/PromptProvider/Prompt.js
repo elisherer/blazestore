@@ -9,21 +9,32 @@ import {
 import DialogTitleWithActions from "../DialogTitleActions";
 import { usePrompt } from "./PromptProvider";
 import { useState } from "react";
+import { useNotification } from "../NotificationProvider/NotificationProvider";
+import { LoadingButton } from "@material-ui/lab";
 
 const Prompt = () => {
   const [setPrompt, prompt] = usePrompt();
   const [input, setInput] = useState("");
+  const notify = useNotification();
+  const [takingAction, setTakingAction] = useState(false);
 
   const handleAction = () => {
     const action = prompt.action;
     const actionTaken = prompt.name;
     if (action) {
-      action(actionTaken, input).then(result => {
-        if (result) {
-          setPrompt(null);
-          setInput("");
-        }
-      });
+      setTakingAction(true);
+      action(actionTaken, input)
+        .then(result => {
+          setTakingAction(false);
+          if (result) {
+            setPrompt(null);
+            setInput("");
+          }
+        })
+        .catch(e => {
+          notify.error(e);
+          setTakingAction(false);
+        });
     } else {
       setPrompt(null);
       setInput("");
@@ -90,28 +101,32 @@ const Prompt = () => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={closeDialog}>{prompt?.negativeText || "Cancel"}</Button>
+        <Button onClick={closeDialog} disabled={takingAction}>
+          {prompt?.negativeText || "Cancel"}
+        </Button>
         {prompt?.name2 && (
-          <Button
+          <LoadingButton
             onClick={handleAction2}
             variant="contained"
             disabled={requiresInput && !input}
             color={prompt?.dangerous ? "secondary" : "primary"}
+            loading={takingAction}
             autoFocus
           >
             {prompt.name2}
-          </Button>
+          </LoadingButton>
         )}
         {prompt?.name && (
-          <Button
+          <LoadingButton
             onClick={handleAction}
             variant="contained"
             disabled={requiresInput && !input}
             color={prompt?.dangerous ? "secondary" : "primary"}
+            loading={takingAction}
             autoFocus
           >
             {prompt.name}
-          </Button>
+          </LoadingButton>
         )}
       </DialogActions>
     </Dialog>
