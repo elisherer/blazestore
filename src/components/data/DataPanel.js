@@ -410,7 +410,7 @@ const DataPanel = ({ type, path, selectedPath, project, items, fields }) => {
           borderBottom: 1,
           borderColor: "divider",
           overflow: "auto",
-          flex: items?.length ? "1 30%" : "0"
+          flex: items?.length ? "1 50%" : "0"
         }}
       >
         <AutoSizer>
