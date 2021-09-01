@@ -7,7 +7,8 @@
     "cookie-session": "1.4.0",
     "dotenv": "^8.2.0",
     "express": "4.17.1",
-    "firebase-admin": "9.7.0",
+    "firebase-admin": "^9.8.0",
+    "firebase-tools": "^9.14.0",
     "node-fetch": "2.6.1",
     "passport": "0.4.1",
     "passport-google-oauth20": "2.0.0"

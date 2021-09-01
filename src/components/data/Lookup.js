@@ -9,7 +9,11 @@ const Lookup = ({ lookupValue, setLookupValue }) => {
       style={{ width: "100%" }}
       onSubmit={e => {
         e.preventDefault();
-        push(`/project/${params.project}/data${lookupValue}`);
+        push(
+          `/project/${params.project}/data/${
+            lookupValue.startsWith("/") ? lookupValue.substr(1) : lookupValue
+          }`
+        );
       }}
     >
       <InputBase

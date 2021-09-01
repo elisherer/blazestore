@@ -28,7 +28,6 @@
     "@monaco-editor/react": "4.1.0",
     "core-js": "3.9.1",
     "date-fns": "2.21.3",
-    "firebase-tools": "9.14.0",
     "install": "0.13.0",
     "monaco-editor": "0.23.0",
     "react": "17.0.1",
