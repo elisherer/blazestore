@@ -402,6 +402,23 @@ const api = () => {
     }
   });
 
+  const validateClause = (clause, ref) => {
+    if (
+      !Array.isArray(clause) ||
+      clause.length < 2 ||
+      clause.length > 3 ||
+      typeof clause[0] !== "string" ||
+      typeof clause[1] !== "string"
+    ) {
+      throw new Error("where_sort must be an array of 2/3 (first 2 values of string)");
+    }
+    if (clause.length === 3) {
+      return ref.where(clause[0], clause[1], mapper([], null, clause[2]));
+    } else {
+      return ref.orderBy(clause[0], clause[1]);
+    }
+  };
+
   router.get("/project/:project/query/:type/:path", async (req, res) => {
     try {
       const firestore = getApp(req).firestore();
@@ -415,19 +432,12 @@ const api = () => {
       }
       if (req.query.where_sort) {
         const clause = JSON.parse(req.query.where_sort);
-        if (
-          !Array.isArray(clause) ||
-          clause.length < 2 ||
-          clause.length > 3 ||
-          typeof clause[0] !== "string" ||
-          typeof clause[1] !== "string"
-        ) {
-          throw new Error("where_sort must be an array of 2/3 (first 2 values of string)");
-        }
-        if (clause.length === 3) {
-          ref = ref.where(clause[0], clause[1], clause[2]);
+        if (Array.isArray(clause) && Array.isArray(clause[0])) {
+          clause.forEach(c => {
+            ref = validateClause(c, ref);
+          });
         } else {
-          ref = ref.orderBy(clause[0], clause[1]);
+          ref = validateClause(clause, ref);
         }
       }
 

@@ -226,8 +226,10 @@ const QueryIndex = () => {
           <Grid item xs={4}>
             <TextField
               variant="outlined"
-              label="Where / Sort (in JSON format, array of length 3 OR 2)"
-              placeholder={'[ "key", "==", 123 ] / [ "key", "asc" ]'}
+              label="Where / Sort (in JSON format, array of length 3 OR 2, or array of arrays)"
+              placeholder={
+                '[ "key", "==", 123 ] / [ "key", "asc" ] / [["key",">","2"],["key","asc"]]'
+              }
               margin="dense"
               fullWidth
               InputLabelProps={{
